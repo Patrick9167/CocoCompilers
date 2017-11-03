@@ -8,7 +8,7 @@ COMPILER Tastier
 
    public SymbolTable tab;
    public CodeGenerator gen;
-  
+
 /*-------------------------------------------------------------------------------------------*/
 
 CHARACTERS
@@ -64,7 +64,7 @@ Expr<out int reg,        // load value of Expr into register
                             }
                             else SemErr("incompatible types");
                          .)
-                        
+
 
    [
       CondExpr<out reg,
@@ -77,21 +77,21 @@ Expr<out int reg,        // load value of Expr into register
 /*-------------------------------------------------------------------------------------------*/
 CondExpr<out int reg,	//Conditional expression
 	 out int type> 	(. int runFirst, runSecond; .)
-    = 
-	
+    =
+
     '?'
 			(. runFirst = gen.NewLabel();
 			   runSecond = gen.NewLabel();
 			   gen.BranchFalse(runSecond); .)
-     Expr<out reg, 
+     Expr<out reg,
 	  out type>	(. gen.Branch(runSecond); .)
     ':'
 			(. gen.Label(runFirst); .)
      Expr<out reg,
-	  out type>	(. gen.Label(runSecond); 
+	  out type>	(. gen.Label(runSecond);
 			   gen.ClearRegisters(); .)
 .
-	
+
 /*-------------------------------------------------------------------------------------------*/
 
 Primary<out int reg,     // load Primary into register
@@ -110,7 +110,7 @@ Primary<out int reg,     // load Primary into register
                                if (type == boolean)
                                // reset Z flag in CPSR
                                   gen.ResetZ(reg);
-			       
+
                             }
                             else SemErr("variable expected");
                          .)
@@ -173,7 +173,7 @@ MulOp<out Op op>
 
 ProcDecl<string progName>
                          (. Obj obj; string procName; .)
-= "void" 
+= "void"
   Ident<out procName>    (.
                             obj = tab.NewObj(procName, proc, undef);
                             if (procName == "main")
@@ -248,7 +248,7 @@ Stat                     (. int type; string name; Obj obj; int reg; .)
 				SemErr("cannot reassign a constant");
                             if (obj.kind != var)
                                SemErr("cannot assign to procedure");
-			  
+
                          .)
     Expr<out reg,
          out type> ';'   (.
@@ -305,7 +305,7 @@ Stat                     (. int type; string name; Obj obj; int reg; .)
   Ident<out name> ';'    (.
                             obj = tab.Find(name);
                             if (obj.type == integer) {
-                               gen.ReadInteger(); 
+                               gen.ReadInteger();
                                if (obj.level == 0)
                                   gen.StoreGlobal(0, obj.adr, name);
                                else gen.StoreLocal(0, tab.curLevel-obj.level, obj.adr, name);
@@ -319,7 +319,7 @@ Stat                     (. int type; string name; Obj obj; int reg; .)
          out type>       (.
                             switch (type) {
                                case integer: gen.WriteInteger(reg, false);
-                                             break; 
+                                             break;
                                case boolean: gen.WriteBoolean(false);
                                              break;
                             }
@@ -342,7 +342,7 @@ Stat                     (. int type; string name; Obj obj; int reg; .)
   ';'
 
 | '{'                      (. tab.OpenSubScope(); .)
-  { VarDecl }
+  { VarDecl | ArrDecl }
   Stat { Stat }
   '}'                      (. tab.CloseSubScope(); .)
 .
@@ -354,7 +354,7 @@ Tastier                  (. string progName; .)
   Ident<out progName>    (. tab.OpenScope(); .)
   '{'
     { ConstDecl }        // Constants
-    { VarDecl }          // global variables
+    { VarDecl | ArrDecl } // global variables or arrays
     { ProcDecl<progName> }
                          (. tab.CloseScope(); .)
   '}'
@@ -403,7 +403,7 @@ ConstDecl		(. string name; int type; int reg; Obj obj;.)
   Type<out type>
   Ident<out name>       (. obj = tab.NewObj(name, constant, type); .)
 
-  "=" 			
+  "="
 
   Primary<out reg,
 	   out type>   (.  if (type == obj.type)
@@ -413,5 +413,28 @@ ConstDecl		(. string name; int type; int reg; Obj obj;.)
 			   else SemErr("incompatible types"); .)
   ";"
 
+.
+
+/*-------------------------------------------------------------------------------------------*/
+
+ArrDecl		(. string name; int type; int reg; Obj obj; int regO; int typeO; int typeT; int regT;.)
+= "array"
+  Type<out type>
+  Ident<out name>       (. obj = tab.NewObj(name, array, type); .)
+
+  "["
+
+  Expr<out regO,
+	   out typeO>          (.if(typeO != integer)
+                            SemErr("incompatible types"); .)
+
+   [
+   ","
+   Expr<out regT,
+     out typeT>          (.if(typeT != integer)
+                            SemErr("incompatible types");  .)
+   ]
+  "]"
+  ";"
 .
 END Tastier.

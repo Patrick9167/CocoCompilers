@@ -5,17 +5,18 @@ program Test {
 
    const int test = 99999;
    int i;
+   array int testArr[20, 67];
 
    void SumUp() {
       int j, sum;
-      
+
       void Subtract() {
          i := i - 1;
       }
-      
+
       void Add() {
          if i > 0 {
-            sum := sum + i; 
+            sum := sum + i;
             Subtract();
             Add();
          }
