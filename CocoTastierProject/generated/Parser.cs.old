@@ -334,7 +334,7 @@ out type);
 		Expect(10);
 		Expect(11);
 		Expect(18);
-		while (la.kind == 35 || la.kind == 36) {
+		while (la.kind == 38 || la.kind == 39) {
 			VarDecl();
 		}
 		while (la.kind == 17) {
@@ -367,56 +367,71 @@ out type);
 		string name; int type; Obj obj; int boundTotal; 
 		Type(out type);
 		Ident(out name);
-		if (la.kind == 37) {
+		if (la.kind == 26) {
 			Get();
 			Bound(out int bound);
 			boundTotal = bound; 
-			if (la.kind == 38) {
+			if (la.kind == 27) {
 				Get();
 				Bound(out int boundR);
 				boundTotal += boundR; 
 			}
-			Expect(39);
-			Expect(27);
+			Expect(28);
+			Expect(30);
 			obj = tab.NewObj(name, array, type, boundTotal); 
-		} else if (la.kind == 27 || la.kind == 38) {
+		} else if (la.kind == 27 || la.kind == 30) {
 			tab.NewObj(name, var, type); 
-			while (la.kind == 38) {
+			while (la.kind == 27) {
 				Get();
 				Ident(out name);
 				tab.NewObj(name, var, type); 
 			}
-			Expect(27);
+			Expect(30);
 		} else SynErr(46);
 	}
 
 	void Stat() {
-		int type; string name; Obj obj; int reg; 
+		int type; string name; Obj obj; int reg; int index=0;
 		switch (la.kind) {
 		case 2: {
 			Ident(out name);
 			obj = tab.Find(name); 
-			if (la.kind == 26) {
-				Get();
+			if (la.kind == 26 || la.kind == 29) {
+				if (la.kind == 26) {
+					Get();
+					Bound(out int bound);
+					index = bound; 
+					if (la.kind == 27) {
+						Get();
+						Bound(out int boundR);
+						index += boundR;
+					}
+					Expect(28);
+				}
+				Expect(29);
 				if (obj.kind == constant)
 				 SemErr("cannot reassign a constant");
-				  if (obj.kind != var)
+				  if (obj.kind == proc || obj.kind == scope)
 				     SemErr("cannot assign to procedure");
 				
 				
 				Expr(out reg,
 out type);
-				Expect(27);
+				Expect(30);
 				if (type == obj.type)
+				{
+				  if (obj.kind == array)
+				     gen.StoreIndexedLocalValue(reg, index, name);
 				  if (obj.level == 0)
 				     gen.StoreGlobal(reg, obj.adr, name);
 				  else gen.StoreLocal(reg, tab.curLevel-obj.level, obj.adr, name);
-				 else SemErr("incompatible types"); // missing line
+				  }
+				else SemErr("incompatible types"); // missing line
 				
 			} else if (la.kind == 10) {
 				Get();
 				Expect(11);
-				Expect(27);
+				Expect(30);
 				if (obj.kind == proc)
 				  gen.Call(name);
 				else SemErr("object is not a procedure");
@@ -424,7 +439,7 @@ out type);
 			} else SynErr(47);
 			break;
 		}
-		case 28: {
+		case 31: {
 			Get();
 			int l1, l2; l1 = 0; 
 			Expr(out reg,
@@ -440,14 +455,14 @@ out type);
 			gen.Branch(l2);
 			gen.Label(l1);
 			
-			if (la.kind == 29) {
+			if (la.kind == 32) {
 				Get();
 				Stat();
 			}
 			gen.Label(l2); 
 			break;
 		}
-		case 30: {
+		case 33: {
 			Get();
 			int l1, l2;
 			l1 = gen.NewLabel();
@@ -467,10 +482,10 @@ out type);
 			
 			break;
 		}
-		case 31: {
+		case 34: {
 			Get();
 			Ident(out name);
-			Expect(27);
+			Expect(30);
 			obj = tab.Find(name);
 			if (obj.type == integer) {
 			  gen.ReadInteger();
@@ -482,7 +497,7 @@ out type);
 			
 			break;
 		}
-		case 32: {
+		case 35: {
 			Get();
 			string text; 
 			if (StartOf(3)) {
@@ -499,10 +514,10 @@ out type);
 				String(out text);
 				gen.WriteString(text); 
 			} else SynErr(48);
-			Expect(27);
+			Expect(30);
 			break;
 		}
-		case 33: {
+		case 36: {
 			Get();
 			Expr(out reg,
 out type);
@@ -513,13 +528,13 @@ out type);
 			                break;
 			}
 			
-			Expect(27);
+			Expect(30);
 			break;
 		}
 		case 18: {
 			Get();
 			tab.OpenSubScope(); 
-			while (la.kind == 35 || la.kind == 36) {
+			while (la.kind == 38 || la.kind == 39) {
 				VarDecl();
 			}
 			Stat();
@@ -550,16 +565,22 @@ out typeR);
 		}
 	}
 
+	void Bound(out int bound) {
+		Expect(1);
+		bound = Convert.ToInt32(t.val);
+		
+	}
+
 	void Tastier() {
 		string progName; 
-		Expect(34);
+		Expect(37);
 		Ident(out progName);
 		tab.OpenScope(); 
 		Expect(18);
 		while (la.kind == 40) {
 			ConstDecl();
 		}
-		while (la.kind == 35 || la.kind == 36) {
+		while (la.kind == 38 || la.kind == 39) {
 			VarDecl();
 		}
 		while (la.kind == 17) {
@@ -583,24 +604,18 @@ out type);
 		           gen.StoreGlobal(reg, obj.adr, name);
 		        else SemErr("Cannot define local constants.");
 		else SemErr("incompatible types"); 
-		Expect(27);
+		Expect(30);
 	}
 
 	void Type(out int type) {
 		type = undef; 
-		if (la.kind == 35) {
+		if (la.kind == 38) {
 			Get();
 			type = integer; 
-		} else if (la.kind == 36) {
+		} else if (la.kind == 39) {
 			Get();
 			type = boolean; 
 		} else SynErr(50);
-	}
-
-	void Bound(out int bound) {
-		Expect(1);
-		bound = Convert.ToInt32(t.val);
-		
 	}
 
 
@@ -617,7 +632,7 @@ out type);
 	static readonly bool[,] set = {
 		{T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
 		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,T,T,T, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
-		{x,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,x, x,x,x,x, x,x,x,x, T,x,T,T, T,T,x,x, x,x,x,x, x,x,x},
+		{x,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,x, x,x,x,x, x,x,x,x, x,x,x,T, x,T,T,T, T,x,x,x, x,x,x},
 		{x,T,T,x, x,T,x,x, T,T,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
 		{x,x,x,x, x,x,x,x, x,x,x,x, T,T,T,T, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x}
 
@@ -659,20 +674,20 @@ public class Errors {
 			case 23: s = "\"!=\" expected"; break;
 			case 24: s = "\"<=\" expected"; break;
 			case 25: s = "\">=\" expected"; break;
-			case 26: s = "\":=\" expected"; break;
-			case 27: s = "\";\" expected"; break;
-			case 28: s = "\"if\" expected"; break;
-			case 29: s = "\"else\" expected"; break;
-			case 30: s = "\"while\" expected"; break;
-			case 31: s = "\"read\" expected"; break;
-			case 32: s = "\"write\" expected"; break;
-			case 33: s = "\"writeln\" expected"; break;
-			case 34: s = "\"program\" expected"; break;
-			case 35: s = "\"int\" expected"; break;
-			case 36: s = "\"bool\" expected"; break;
-			case 37: s = "\"[\" expected"; break;
-			case 38: s = "\",\" expected"; break;
-			case 39: s = "\"]\" expected"; break;
+			case 26: s = "\"[\" expected"; break;
+			case 27: s = "\",\" expected"; break;
+			case 28: s = "\"]\" expected"; break;
+			case 29: s = "\":=\" expected"; break;
+			case 30: s = "\";\" expected"; break;
+			case 31: s = "\"if\" expected"; break;
+			case 32: s = "\"else\" expected"; break;
+			case 33: s = "\"while\" expected"; break;
+			case 34: s = "\"read\" expected"; break;
+			case 35: s = "\"write\" expected"; break;
+			case 36: s = "\"writeln\" expected"; break;
+			case 37: s = "\"program\" expected"; break;
+			case 38: s = "\"int\" expected"; break;
+			case 39: s = "\"bool\" expected"; break;
 			case 40: s = "\"const\" expected"; break;
 			case 41: s = "??? expected"; break;
 			case 42: s = "invalid AddOp"; break;

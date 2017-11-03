@@ -269,10 +269,10 @@ public class Scanner {
 		start[60] = 25; 
 		start[62] = 26; 
 		start[33] = 15; 
-		start[59] = 20; 
-		start[91] = 21; 
-		start[44] = 22; 
-		start[93] = 23; 
+		start[91] = 19; 
+		start[44] = 20; 
+		start[93] = 21; 
+		start[59] = 23; 
 		start[Buffer.EOF] = -1;
 
 	}
@@ -392,15 +392,15 @@ public class Scanner {
 			case "mod": t.kind = 15; break;
 			case "MOD": t.kind = 16; break;
 			case "void": t.kind = 17; break;
-			case "if": t.kind = 28; break;
-			case "else": t.kind = 29; break;
-			case "while": t.kind = 30; break;
-			case "read": t.kind = 31; break;
-			case "write": t.kind = 32; break;
-			case "writeln": t.kind = 33; break;
-			case "program": t.kind = 34; break;
-			case "int": t.kind = 35; break;
-			case "bool": t.kind = 36; break;
+			case "if": t.kind = 31; break;
+			case "else": t.kind = 32; break;
+			case "while": t.kind = 33; break;
+			case "read": t.kind = 34; break;
+			case "write": t.kind = 35; break;
+			case "writeln": t.kind = 36; break;
+			case "program": t.kind = 37; break;
+			case "int": t.kind = 38; break;
+			case "bool": t.kind = 39; break;
 			case "const": t.kind = 40; break;
 			default: break;
 		}
@@ -479,14 +479,14 @@ public class Scanner {
 			case 20:
 				{t.kind = 27; break;}
 			case 21:
-				{t.kind = 37; break;}
+				{t.kind = 28; break;}
 			case 22:
-				{t.kind = 38; break;}
+				{t.kind = 29; break;}
 			case 23:
-				{t.kind = 39; break;}
+				{t.kind = 30; break;}
 			case 24:
 				recEnd = pos; recKind = 7;
-				if (ch == '=') {AddCh(); goto case 19;}
+				if (ch == '=') {AddCh(); goto case 22;}
 				else {t.kind = 7; break;}
 			case 25:
 				recEnd = pos; recKind = 21;

@@ -6,7 +6,7 @@ program Test {
    const int test = 99999;
    int i;
    int testArr[20];
-
+   int sum;
    void SumUp() {
       int j, sum;
 
@@ -24,6 +24,7 @@ program Test {
 
       j := i;
       sum := 0;
+      testArr[sum+3] := sum;
       Add();
       write "The sum of the values from 1 to ";
       write j; write " is ";
