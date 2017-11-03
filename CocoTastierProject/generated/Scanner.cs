@@ -229,8 +229,8 @@ public class UTF8Buffer: Buffer {
 public class Scanner {
 	const char EOL = '\n';
 	const int eofSym = 0; /* pdt */
-	const int maxT = 42;
-	const int noSym = 42;
+	const int maxT = 41;
+	const int noSym = 41;
 
 
 	public Buffer buffer; // scanner buffer
@@ -270,8 +270,8 @@ public class Scanner {
 		start[62] = 26; 
 		start[33] = 15; 
 		start[59] = 20; 
-		start[44] = 21; 
-		start[91] = 22; 
+		start[91] = 21; 
+		start[44] = 22; 
 		start[93] = 23; 
 		start[Buffer.EOF] = -1;
 
@@ -401,8 +401,7 @@ public class Scanner {
 			case "program": t.kind = 34; break;
 			case "int": t.kind = 35; break;
 			case "bool": t.kind = 36; break;
-			case "const": t.kind = 38; break;
-			case "array": t.kind = 39; break;
+			case "const": t.kind = 40; break;
 			default: break;
 		}
 	}
@@ -482,9 +481,9 @@ public class Scanner {
 			case 21:
 				{t.kind = 37; break;}
 			case 22:
-				{t.kind = 40; break;}
+				{t.kind = 38; break;}
 			case 23:
-				{t.kind = 41; break;}
+				{t.kind = 39; break;}
 			case 24:
 				recEnd = pos; recKind = 7;
 				if (ch == '=') {AddCh(); goto case 19;}

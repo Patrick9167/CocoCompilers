@@ -244,8 +244,8 @@ SimExpr<out int reg,     //load value of SimExpr into register
 Stat                     (. int type; string name; Obj obj; int reg; .)
 = Ident<out name>        (. obj = tab.Find(name); .)
   ( ":="                 (.
-			    if (obj.kind == constant)
-				SemErr("cannot reassign a constant");
+			                      if (obj.kind == constant)
+				                       SemErr("cannot reassign a constant");
                             if (obj.kind != var)
                                SemErr("cannot assign to procedure");
 
@@ -256,7 +256,7 @@ Stat                     (. int type; string name; Obj obj; int reg; .)
                                if (obj.level == 0)
                                   gen.StoreGlobal(reg, obj.adr, name);
                                else gen.StoreLocal(reg, tab.curLevel-obj.level, obj.adr, name);
-			    else SemErr("incompatible types"); // missing line
+			                           else SemErr("incompatible types"); // missing line
                          .)
   | '(' ')' ';'          (.
                             if (obj.kind == proc)
@@ -342,7 +342,7 @@ Stat                     (. int type; string name; Obj obj; int reg; .)
   ';'
 
 | '{'                      (. tab.OpenSubScope(); .)
-  { VarDecl | ArrDecl }
+  { VarDecl}
   Stat { Stat }
   '}'                      (. tab.CloseSubScope(); .)
 .
@@ -354,7 +354,7 @@ Tastier                  (. string progName; .)
   Ident<out progName>    (. tab.OpenScope(); .)
   '{'
     { ConstDecl }        // Constants
-    { VarDecl | ArrDecl } // global variables or arrays
+    { VarDecl} // global variables or arrays
     { ProcDecl<progName> }
                          (. tab.CloseScope(); .)
   '}'
@@ -388,12 +388,32 @@ Type<out int type>
 
 /*-------------------------------------------------------------------------------------------*/
 
-VarDecl                  (. string name; int type; .)
+VarDecl                  (. string name; int type; Obj obj; int regO; int typeO; int typeT; int regT; .)
 = Type<out type>
-  Ident<out name>        (. tab.NewObj(name, var, type); .)
+  Ident<out name>
+  (
+  "["
+                         (. obj = tab.NewObj(name, array, type); .)
+  Expr<out regO,
+     out typeO>          (.if(typeO != integer)
+                            SemErr("incompatible types"); .)
+
+   [
+   ","
+   Expr<out regT,
+     out typeT>          (.if(typeT != integer)
+                            SemErr("incompatible types");  .)
+   ]
+  "]"
+  ";"
+  |
+
+                          (. tab.NewObj(name, var, type); .)
   { ","
     Ident<out name>      (. tab.NewObj(name, var, type); .)
-  } ";"
+  }
+   ";"
+   )
 .
 
 /*-------------------------------------------------------------------------------------------*/
@@ -415,26 +435,5 @@ ConstDecl		(. string name; int type; int reg; Obj obj;.)
 
 .
 
-/*-------------------------------------------------------------------------------------------*/
 
-ArrDecl		(. string name; int type; int reg; Obj obj; int regO; int typeO; int typeT; int regT;.)
-= "array"
-  Type<out type>
-  Ident<out name>       (. obj = tab.NewObj(name, array, type); .)
-
-  "["
-
-  Expr<out regO,
-	   out typeO>          (.if(typeO != integer)
-                            SemErr("incompatible types"); .)
-
-   [
-   ","
-   Expr<out regT,
-     out typeT>          (.if(typeT != integer)
-                            SemErr("incompatible types");  .)
-   ]
-  "]"
-  ";"
-.
 END Tastier.

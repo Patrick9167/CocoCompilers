@@ -36,7 +36,7 @@ public class Parser {
 	public const int _number = 1;
 	public const int _ident = 2;
 	public const int _string = 3;
-	public const int maxT = 42;
+	public const int maxT = 41;
 
 	const bool T = true;
 	const bool x = false;
@@ -126,7 +126,7 @@ const int // object kinds
 		} else if (la.kind == 5) {
 			Get();
 			op = Op.SUB; 
-		} else SynErr(43);
+		} else SynErr(42);
 	}
 
 	void Expr(out int reg,        // load value of Expr into register
@@ -200,7 +200,7 @@ out typeR);
 			op = Op.GEQ; 
 			break;
 		}
-		default: SynErr(44); break;
+		default: SynErr(43); break;
 		}
 	}
 
@@ -285,7 +285,7 @@ out type);
 			Expect(11);
 			break;
 		}
-		default: SynErr(45); break;
+		default: SynErr(44); break;
 		}
 	}
 
@@ -317,7 +317,7 @@ out type);
 				Get();
 			}
 			op = Op.MOD; 
-		} else SynErr(46);
+		} else SynErr(45);
 	}
 
 	void ProcDecl(string progName) {
@@ -364,16 +364,34 @@ out type);
 	}
 
 	void VarDecl() {
-		string name; int type; 
+		string name; int type; Obj obj; int regO; int typeO; int typeT; int regT; 
 		Type(out type);
 		Ident(out name);
-		tab.NewObj(name, var, type); 
-		while (la.kind == 37) {
+		if (la.kind == 37) {
 			Get();
-			Ident(out name);
+			obj = tab.NewObj(name, array, type); 
+			Expr(out regO,
+out typeO);
+			if(typeO != integer)
+			SemErr("incompatible types"); 
+			if (la.kind == 38) {
+				Get();
+				Expr(out regT,
+out typeT);
+				if(typeT != integer)
+				SemErr("incompatible types");  
+			}
+			Expect(39);
+			Expect(27);
+		} else if (la.kind == 27 || la.kind == 38) {
 			tab.NewObj(name, var, type); 
-		}
-		Expect(27);
+			while (la.kind == 38) {
+				Get();
+				Ident(out name);
+				tab.NewObj(name, var, type); 
+			}
+			Expect(27);
+		} else SynErr(46);
 	}
 
 	void Stat() {
@@ -385,11 +403,11 @@ out type);
 			if (la.kind == 26) {
 				Get();
 				if (obj.kind == constant)
-				SemErr("cannot reassign a constant");
-				                    if (obj.kind != var)
-				                       SemErr("cannot assign to procedure");
+				 SemErr("cannot reassign a constant");
+				  if (obj.kind != var)
+				     SemErr("cannot assign to procedure");
 				
-				                 
+				
 				Expr(out reg,
 out type);
 				Expect(27);
@@ -397,7 +415,7 @@ out type);
 				  if (obj.level == 0)
 				     gen.StoreGlobal(reg, obj.adr, name);
 				  else gen.StoreLocal(reg, tab.curLevel-obj.level, obj.adr, name);
-				else SemErr("incompatible types"); // missing line
+				 else SemErr("incompatible types"); // missing line
 				
 			} else if (la.kind == 10) {
 				Get();
@@ -505,12 +523,8 @@ out type);
 		case 18: {
 			Get();
 			tab.OpenSubScope(); 
-			while (la.kind == 35 || la.kind == 36 || la.kind == 39) {
-				if (la.kind == 35 || la.kind == 36) {
-					VarDecl();
-				} else {
-					ArrDecl();
-				}
+			while (la.kind == 35 || la.kind == 36) {
+				VarDecl();
 			}
 			Stat();
 			while (StartOf(2)) {
@@ -540,43 +554,17 @@ out typeR);
 		}
 	}
 
-	void ArrDecl() {
-		string name; int type; int reg; Obj obj; int regO; int typeO; int typeT; int regT;
-		Expect(39);
-		Type(out type);
-		Ident(out name);
-		obj = tab.NewObj(name, array, type); 
-		Expect(40);
-		Expr(out regO,
-out typeO);
-		if(typeO != integer)
-		 SemErr("incompatible types"); 
-		if (la.kind == 37) {
-			Get();
-			Expr(out regT,
-out typeT);
-			if(typeT != integer)
-			SemErr("incompatible types");  
-		}
-		Expect(41);
-		Expect(27);
-	}
-
 	void Tastier() {
 		string progName; 
 		Expect(34);
 		Ident(out progName);
 		tab.OpenScope(); 
 		Expect(18);
-		while (la.kind == 38) {
+		while (la.kind == 40) {
 			ConstDecl();
 		}
-		while (la.kind == 35 || la.kind == 36 || la.kind == 39) {
-			if (la.kind == 35 || la.kind == 36) {
-				VarDecl();
-			} else {
-				ArrDecl();
-			}
+		while (la.kind == 35 || la.kind == 36) {
+			VarDecl();
 		}
 		while (la.kind == 17) {
 			ProcDecl(progName);
@@ -587,7 +575,7 @@ out typeT);
 
 	void ConstDecl() {
 		string name; int type; int reg; Obj obj;
-		Expect(38);
+		Expect(40);
 		Type(out type);
 		Ident(out name);
 		obj = tab.NewObj(name, constant, type); 
@@ -625,11 +613,11 @@ out type);
 	}
 	
 	static readonly bool[,] set = {
-		{T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x},
-		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,T,T,T, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x},
-		{x,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,x, x,x,x,x, x,x,x,x, T,x,T,T, T,T,x,x, x,x,x,x, x,x,x,x},
-		{x,T,T,x, x,T,x,x, T,T,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x},
-		{x,x,x,x, x,x,x,x, x,x,x,x, T,T,T,T, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x}
+		{T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
+		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,T,T,T, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
+		{x,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,x, x,x,x,x, x,x,x,x, T,x,T,T, T,T,x,x, x,x,x,x, x,x,x},
+		{x,T,T,x, x,T,x,x, T,T,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
+		{x,x,x,x, x,x,x,x, x,x,x,x, T,T,T,T, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x}
 
 	};
 } // end Parser
@@ -680,16 +668,16 @@ public class Errors {
 			case 34: s = "\"program\" expected"; break;
 			case 35: s = "\"int\" expected"; break;
 			case 36: s = "\"bool\" expected"; break;
-			case 37: s = "\",\" expected"; break;
-			case 38: s = "\"const\" expected"; break;
-			case 39: s = "\"array\" expected"; break;
-			case 40: s = "\"[\" expected"; break;
-			case 41: s = "\"]\" expected"; break;
-			case 42: s = "??? expected"; break;
-			case 43: s = "invalid AddOp"; break;
-			case 44: s = "invalid RelOp"; break;
-			case 45: s = "invalid Primary"; break;
-			case 46: s = "invalid MulOp"; break;
+			case 37: s = "\"[\" expected"; break;
+			case 38: s = "\",\" expected"; break;
+			case 39: s = "\"]\" expected"; break;
+			case 40: s = "\"const\" expected"; break;
+			case 41: s = "??? expected"; break;
+			case 42: s = "invalid AddOp"; break;
+			case 43: s = "invalid RelOp"; break;
+			case 44: s = "invalid Primary"; break;
+			case 45: s = "invalid MulOp"; break;
+			case 46: s = "invalid VarDecl"; break;
 			case 47: s = "invalid Stat"; break;
 			case 48: s = "invalid Stat"; break;
 			case 49: s = "invalid Stat"; break;

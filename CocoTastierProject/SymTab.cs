@@ -121,7 +121,6 @@ public class SymbolTable {
       return obj;
    }
 
-   public obj allocateSpace
 
 // search for name in open scopes and return its object node
    public Obj Find(string name) {

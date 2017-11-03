@@ -32,7 +32,7 @@ main
  ADD R2, R4, R2, LSL #2
  STR R5, [R2] ; test
     LDR     R6, =20
-    LDR     R7, =67
+    LDR     R7, =34
 ; Procedure Subtract
 SubtractBody
  LDR R2, =1
