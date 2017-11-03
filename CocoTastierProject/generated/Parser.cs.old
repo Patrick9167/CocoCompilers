@@ -364,25 +364,21 @@ out type);
 	}
 
 	void VarDecl() {
-		string name; int type; Obj obj; int regO; int typeO; int typeT; int regT; 
+		string name; int type; Obj obj; int boundTotal; 
 		Type(out type);
 		Ident(out name);
 		if (la.kind == 37) {
 			Get();
-			obj = tab.NewObj(name, array, type); 
-			Expr(out regO,
-out typeO);
-			if(typeO != integer)
-			SemErr("incompatible types"); 
+			Bound(out int bound);
+			boundTotal = bound; 
 			if (la.kind == 38) {
 				Get();
-				Expr(out regT,
-out typeT);
-				if(typeT != integer)
-				SemErr("incompatible types");  
+				Bound(out int boundR);
+				boundTotal += boundR; 
 			}
 			Expect(39);
 			Expect(27);
+			obj = tab.NewObj(name, array, type, boundTotal); 
 		} else if (la.kind == 27 || la.kind == 38) {
 			tab.NewObj(name, var, type); 
 			while (la.kind == 38) {
@@ -580,7 +576,7 @@ out typeR);
 		Ident(out name);
 		obj = tab.NewObj(name, constant, type); 
 		Expect(20);
-		Primary(out reg,
+		Expr(out reg,
 out type);
 		if (type == obj.type)
 		        if (obj.level == 0)
@@ -599,6 +595,12 @@ out type);
 			Get();
 			type = boolean; 
 		} else SynErr(50);
+	}
+
+	void Bound(out int bound) {
+		Expect(1);
+		bound = Convert.ToInt32(t.val);
+		
 	}
 
 

@@ -388,24 +388,22 @@ Type<out int type>
 
 /*-------------------------------------------------------------------------------------------*/
 
-VarDecl                  (. string name; int type; Obj obj; int regO; int typeO; int typeT; int regT; .)
+VarDecl                  (. string name; int type; Obj obj; int boundTotal; .)
 = Type<out type>
   Ident<out name>
   (
   "["
-                         (. obj = tab.NewObj(name, array, type); .)
-  Expr<out regO,
-     out typeO>          (.if(typeO != integer)
-                            SemErr("incompatible types"); .)
+
+
+  Bound<out int bound>         (. boundTotal = bound; .)
 
    [
    ","
-   Expr<out regT,
-     out typeT>          (.if(typeT != integer)
-                            SemErr("incompatible types");  .)
+   Bound<out int boundR>        (.boundTotal += boundR; .)
    ]
   "]"
   ";"
+                          (. obj = tab.NewObj(name, array, type, boundTotal); .)
   |
 
                           (. tab.NewObj(name, var, type); .)
@@ -425,7 +423,7 @@ ConstDecl		(. string name; int type; int reg; Obj obj;.)
 
   "="
 
-  Primary<out reg,
+  Expr<out reg,
 	   out type>   (.  if (type == obj.type)
                              if (obj.level == 0)
                                 gen.StoreGlobal(reg, obj.adr, name);
@@ -435,5 +433,12 @@ ConstDecl		(. string name; int type; int reg; Obj obj;.)
 
 .
 
+/*-------------------------------------------------------------------------------------------*/
 
+Bound<out int bound>
+= number
+                       (.
+                          bound = Convert.ToInt32(t.val);
+                       .)
+.
 END Tastier.

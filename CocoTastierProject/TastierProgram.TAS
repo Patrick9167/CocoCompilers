@@ -5,7 +5,7 @@ program Test {
 
    const int test = 99999;
    int i;
-   int testArr[20, 34];
+   int testArr[20];
 
    void SumUp() {
       int j, sum;

@@ -101,8 +101,11 @@ public class SymbolTable {
       topScope = topScope.outer;
    }
 
-// create new object node in current scope
    public Obj NewObj(string name, int kind, int type) {
+     return NewObj(name, kind, type, 0);
+   }
+// create new object node in current scope
+   public Obj NewObj(string name, int kind, int type, int length) {
       Obj p, last;
       Obj obj = new Obj();
       obj.name = name; obj.kind = kind;
@@ -118,6 +121,8 @@ public class SymbolTable {
          topScope.locals = obj; else last.next = obj;
       if (kind == var || kind == constant)
          obj.adr = topScope.nextAdr++;
+      if (kind == array)
+          obj.adr = topScope.nextAdr+=length;
       return obj;
    }
 
