@@ -101,6 +101,10 @@ public class SymbolTable {
       topScope = topScope.outer;
    }
 
+   public Obj NewObj(int kind, int type) {
+     return NewObj("temp", kind, type, 0);
+   }
+
    public Obj NewObj(string name, int kind, int type) {
      return NewObj(name, kind, type, 0);
    }

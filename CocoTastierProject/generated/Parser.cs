@@ -232,7 +232,7 @@ out int type) {
 		case 2: {
 			Ident(out name);
 			obj = tab.Find(name); type = obj.type;
-			if (obj.kind == var) {
+			if (obj.kind == var || obj.kind == constant) {
 			  if (obj.level == 0)
 			     gen.LoadGlobal(reg, obj.adr, name);
 			  else
@@ -364,7 +364,7 @@ out type);
 	}
 
 	void VarDecl() {
-		string name; int type; Obj obj; int boundTotal; 
+		string name; int type; int boundTotal; 
 		Type(out type);
 		Ident(out name);
 		if (la.kind == 26) {
@@ -378,7 +378,7 @@ out type);
 			}
 			Expect(28);
 			Expect(30);
-			obj = tab.NewObj(name, array, type, boundTotal); 
+			tab.NewObj(name, array, type, boundTotal); 
 		} else if (la.kind == 27 || la.kind == 30) {
 			tab.NewObj(name, var, type); 
 			while (la.kind == 27) {
@@ -391,7 +391,7 @@ out type);
 	}
 
 	void Stat() {
-		int type; string name; Obj obj; int reg; int index=0;
+		int type; string name; Obj obj; int reg;
 		switch (la.kind) {
 		case 2: {
 			Ident(out name);
@@ -399,12 +399,17 @@ out type);
 			if (la.kind == 26 || la.kind == 29) {
 				if (la.kind == 26) {
 					Get();
-					Bound(out int bound);
-					index = bound; 
+					Expr(out reg,
+ out type);
+					if( type == integer || type == constant)
+					  tab.NewObj(reg, type);
+					else SemErr("Index must be Int/Constant");
+					
 					if (la.kind == 27) {
 						Get();
-						Bound(out int boundR);
-						index += boundR;
+						Expr(out reg,
+out type);
+						
 					}
 					Expect(28);
 				}
@@ -420,8 +425,7 @@ out type);
 				Expect(30);
 				if (type == obj.type)
 				{
-				  if (obj.kind == array)
-				     gen.StoreIndexedLocalValue(reg, index, name);
+				  
 				  if (obj.level == 0)
 				     gen.StoreGlobal(reg, obj.adr, name);
 				  else gen.StoreLocal(reg, tab.curLevel-obj.level, obj.adr, name);
@@ -565,12 +569,6 @@ out typeR);
 		}
 	}
 
-	void Bound(out int bound) {
-		Expect(1);
-		bound = Convert.ToInt32(t.val);
-		
-	}
-
 	void Tastier() {
 		string progName; 
 		Expect(37);
@@ -616,6 +614,12 @@ out type);
 			Get();
 			type = boolean; 
 		} else SynErr(50);
+	}
+
+	void Bound(out int bound) {
+		Expect(1);
+		bound = Convert.ToInt32(t.val);
+		
 	}
 
 

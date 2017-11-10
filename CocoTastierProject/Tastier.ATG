@@ -102,7 +102,7 @@ Primary<out int reg,     // load Primary into register
                          .)
  (Ident<out name>     	 (.
                             obj = tab.Find(name); type = obj.type;
-                            if (obj.kind == var) {
+                            if (obj.kind == var || obj.kind == constant) {
                                if (obj.level == 0)
                                   gen.LoadGlobal(reg, obj.adr, name);
                                else
@@ -241,19 +241,25 @@ SimExpr<out int reg,     //load value of SimExpr into register
 
 /*-------------------------------------------------------------------------------------------*/
 
-Stat                     (. int type; string name; Obj obj; int reg; int index=0;.)
+Stat                     (. int type; string name; Obj obj; int reg;.)
 = Ident<out name>        (. obj = tab.Find(name); .)
   (
-    [
-    "["
-      Bound<out int bound> (. index = bound; .)
+[
+  "["
+       Expr<out reg,
+              out type>  (.if( type == integer || type == constant)
+                              tab.NewObj(reg, type);
+                           else SemErr("Index must be Int/Constant");
+                           .)
 
       [
-      ","
-       Bound<out int boundR>(. index += boundR;.)///////////////change to expression
+       ","
+          Expr<out reg,
+               out type> (..)
       ]
-      "]"
-    ]
+  "]"
+
+]
 
 
   ":="                 (.
@@ -267,8 +273,7 @@ Stat                     (. int type; string name; Obj obj; int reg; int index=0
          out type> ';'   (.
                             if (type == obj.type)
                             {
-                               if (obj.kind == array)
-                                  gen.StoreIndexedLocalValue(reg, index, name);
+                               
                                if (obj.level == 0)
                                   gen.StoreGlobal(reg, obj.adr, name);
                                else gen.StoreLocal(reg, tab.curLevel-obj.level, obj.adr, name);
@@ -405,7 +410,7 @@ Type<out int type>
 
 /*-------------------------------------------------------------------------------------------*/
 
-VarDecl                  (. string name; int type; Obj obj; int boundTotal; .)
+VarDecl                  (. string name; int type; int boundTotal; .)
 = Type<out type>
   Ident<out name>
   (
@@ -416,11 +421,11 @@ VarDecl                  (. string name; int type; Obj obj; int boundTotal; .)
 
    [
    ","
-   Bound<out int boundR>        (.boundTotal += boundR; .)
+   Bound<out int boundR>        (.boundTotal += boundR; .)     //2D array means the allocated space is i+j
    ]
   "]"
   ";"
-                          (. obj = tab.NewObj(name, array, type, boundTotal); .)
+                          (. tab.NewObj(name, array, type, boundTotal); .)
   |
 
                           (. tab.NewObj(name, var, type); .)
