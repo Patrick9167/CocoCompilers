@@ -1,15 +1,15 @@
     LDR     R5, =99999
- LDR R2, =0
+ LDR R2, =1
  ADD R2, R4, R2, LSL #2
  STR R5, [R2] ; test
 ; Procedure Subtract
 SubtractBody
- LDR R2, =1
+ LDR R2, =0
  ADD R2, R4, R2, LSL #2
  LDR R6, [R2] ; i
     LDR     R7, =1
     SUB     R6, R6, R7
- LDR R2, =1
+ LDR R2, =0
  ADD R2, R4, R2, LSL #2
  STR R6, [R2] ; i
     MOV     TOP, BP         ; reset top of stack
@@ -23,7 +23,7 @@ Subtract
 
 ; Procedure Add
 AddBody
- LDR R2, =1
+ LDR R2, =0
  ADD R2, R4, R2, LSL #2
  LDR R8, [R2] ; i
     LDR     R9, =0
@@ -38,7 +38,7 @@ AddBody
     LDR     R1, =1
     ADD     R2, R2, R1, LSL #2
     LDR     R10, [R2]        ; sum
- LDR R2, =1
+ LDR R2, =0
  ADD R2, R4, R2, LSL #2
  LDR R11, [R2] ; i
     ADD     R10, R10, R11
@@ -68,7 +68,7 @@ Add
 
 ; Procedure SumUp
 SumUpBody
- LDR R2, =1
+ LDR R2, =0
  ADD R2, R4, R2, LSL #2
  LDR R12, [R2] ; i
     ADD     R2, BP, #16
@@ -128,11 +128,11 @@ MainBody
     ALIGN
 L5
     BL      TastierReadInt
- LDR R2, =1
+ LDR R2, =0
  ADD R2, R4, R2, LSL #2
  STR R0, [R2] ; i
 L6
- LDR R2, =1
+ LDR R2, =0
  ADD R2, R4, R2, LSL #2
  LDR R16, [R2] ; i
     LDR     R17, =0
@@ -151,9 +151,13 @@ L6
     ALIGN
 L8
     BL      TastierReadInt
- LDR R2, =1
+ LDR R2, =0
  ADD R2, R4, R2, LSL #2
  STR R0, [R2] ; i
+    LDR     R18, =4
+ LDR R2, =112
+ ADD R2, R4, R2, LSL #2
+ STR R18, [R2] ; month
     B       L6
 L7
 StopTest
@@ -164,10 +168,11 @@ Main
     BL      enter           ; build new stack frame
     B       MainBody
 
-;OBJECT--Name: test. Global procedure with address 0
-;OBJECT--Name: i. Global variable of type Integer with address 1
+;OBJECT--Name: i. Global variable of type Integer with address 0
+;OBJECT--Name: test. Global procedure with address 1
 ;OBJECT--Name: testArr. Global procedure with address 111
 ;OBJECT--Name: sum. Global variable of type Integer with address 111
+;OBJECT--Name: month. Global variable of type Integer with address 112
 ;OBJECT--Name: SumUp. Global procedure with address 0
 ;OBJECT--Name: main. Global procedure with address 0
 

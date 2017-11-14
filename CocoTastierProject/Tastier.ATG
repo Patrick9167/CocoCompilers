@@ -273,7 +273,7 @@ Stat                     (. int type; string name; Obj obj; int reg;.)
          out type> ';'   (.
                             if (type == obj.type)
                             {
-                               
+
                                if (obj.level == 0)
                                   gen.StoreGlobal(reg, obj.adr, name);
                                else gen.StoreLocal(reg, tab.curLevel-obj.level, obj.adr, name);
@@ -304,6 +304,30 @@ Stat                     (. int type; string name; Obj obj; int reg;.)
       [ "else"
       Stat
       ]               	 (. gen.Label(l2); .)
+
+| "switch"
+
+  "("
+     Ident<out name>    (. obj = tab.Find(name);
+                           if(obj.kind != var)
+                              SemErr("Must be a variable!");
+                           if(obj.type != integer)
+                              SemErr("Must be an integer!");.)
+  ")"
+
+  "{"
+{
+  "case"
+    Expr<out reg,
+          out type>      (.if(type == obj.type)
+                            .)
+
+  ":"
+
+
+}
+
+ "}"
 
 | "while"                (.
                             int l1, l2;
@@ -375,8 +399,8 @@ Tastier                  (. string progName; .)
   = "program"
   Ident<out progName>    (. tab.OpenScope(); .)
   '{'
-    { ConstDecl }        // Constants
-    { VarDecl} // global variables or arrays
+    // Constants
+    { VarDecl | ConstDecl} // Constants or global variables/arrays
     { ProcDecl<progName> }
                          (. tab.CloseScope(); .)
   '}'
