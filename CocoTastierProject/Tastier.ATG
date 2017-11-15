@@ -241,21 +241,25 @@ SimExpr<out int reg,     //load value of SimExpr into register
 
 /*-------------------------------------------------------------------------------------------*/
 
-Stat                     (. int type; string name; Obj obj; int reg;.)
+Stat                     (. int type, typeT; string name; Obj obj; int reg, regT;.)
 = Ident<out name>        (. obj = tab.Find(name); .)
   (
 [
   "["
        Expr<out reg,
-              out type>  (.if( type == integer || type == constant)
-                              tab.NewObj(reg, type);
-                           else SemErr("Index must be Int/Constant");
+              out type>  (.if( type == integer || type == constant) {
+                            reg = gen.GetRegister();
+
+                          }
+                           else SemErr("Invalid Index");
                            .)
 
       [
        ","
-          Expr<out reg,
-               out type> (..)
+          Expr<out regT,
+               out typeT> (.if(typeT==integer || type == constant)
+                              gen.AddOp(Op.ADD, reg, regT);
+                            else SemErr("Invalid Index");.)
       ]
   "]"
 
@@ -273,7 +277,9 @@ Stat                     (. int type; string name; Obj obj; int reg;.)
          out type> ';'   (.
                             if (type == obj.type)
                             {
+                               if(obj.kind==array) {
 
+                               }
                                if (obj.level == 0)
                                   gen.StoreGlobal(reg, obj.adr, name);
                                else gen.StoreLocal(reg, tab.curLevel-obj.level, obj.adr, name);
