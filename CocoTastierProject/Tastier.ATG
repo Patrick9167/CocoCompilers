@@ -287,7 +287,7 @@ Stat                     (. int type; string name; Obj obj; int reg;.)
                          .)
   )
 
-| "if"                   (. int l1, l2; l1 = 0; .)
+| "if"                   (.int l1, l2; l1 = 0; .)
   Expr<out reg,
        out type>         (.
                             if (type == boolean) {
@@ -305,7 +305,11 @@ Stat                     (. int type; string name; Obj obj; int reg;.)
       Stat
       ]               	 (. gen.Label(l2); .)
 
-| "switch"
+
+
+| "switch"              (.int breakL, nextCaseL, regR;
+                          nextCaseL = gen.NewLabel();
+                          breakL = gen.NewLabel();.)
 
   "("
      Ident<out name>    (. obj = tab.Find(name);
@@ -317,17 +321,39 @@ Stat                     (. int type; string name; Obj obj; int reg;.)
 
   "{"
 {
+
   "case"
     Expr<out reg,
-          out type>      (.if(type == obj.type)
-                            .)
-
+          out type>      (.if(type == obj.type) {
+                              regR = gen.GetRegister();
+                              gen.LoadLocal(regR, (tab.curLevel-obj.level), obj.adr, obj.name);
+                              gen.RelOp(Op.EQU, reg, regR);
+                              gen.BranchFalse(nextCaseL);
+                            }
+                          else SemErr("Must be the same type!");
+                        .)
   ":"
-
-
+  {
+    Stat
+  }
+    [
+      "break;"            (.gen.Branch(breakL);.)
+    ]
+                          (. gen.Label(nextCaseL);.)
 }
 
+"default"
+  ":"
+    {
+      Stat
+    }
+    [
+      "break;"            (.gen.Branch(breakL);.)
+    ]
+                          (. gen.Label(breakL);.)
  "}"
+
+
 
 | "while"                (.
                             int l1, l2;
