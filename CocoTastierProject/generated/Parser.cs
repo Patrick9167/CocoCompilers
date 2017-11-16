@@ -391,7 +391,7 @@ out type);
 	}
 
 	void Stat() {
-		int type, typeT; string name; Obj obj; int reg, regT;
+		int type, typeT; string name; Obj obj; int reg, regT, regO, regL, typeL;
 		switch (la.kind) {
 		case 2: {
 			Ident(out name);
@@ -401,18 +401,18 @@ out type);
 					Get();
 					Expr(out reg,
  out type);
-					if( type == integer || type == constant) {
-					reg = gen.GetRegister();
-					
+					if( type == integer) {
+					  regO = gen.GetRegister();
+					  gen.StoreLocal(reg, tab.curLevel-obj.level, obj.adr, "temp");
 					}
 					else SemErr("Invalid Index");
 					
 					if (la.kind == 27) {
 						Get();
-						Expr(out regT,
-out typeT);
-						if(typeT==integer || type == constant)
-						 gen.AddOp(Op.ADD, reg, regT);
+						Expr(out reg,
+out type);
+						if(type==integer)
+						  gen.AddOp(Op.ADD, regO, reg);
 						else SemErr("Invalid Index");
 					}
 					Expect(28);
@@ -430,7 +430,9 @@ out type);
 				if (type == obj.type)
 				{
 				  if(obj.kind==array) {
-				
+				     if(obj.level==0)
+				       gen.StoreIndexedGlobal(reg, obj.adr, regO, name);
+				     else gen.StoreIndexedLocal(reg, tab.curLevel-obj.level, obj.adr, regO, name);
 				  }
 				  if (obj.level == 0)
 				     gen.StoreGlobal(reg, obj.adr, name);
@@ -492,7 +494,7 @@ out type);
 out type);
 				if(type == obj.type) {
 				  regR = gen.GetRegister();
-				  gen.LoadLocal(regR, (tab.curLevel-obj.level), obj.adr, obj.name);
+				  gen.StoreLocal(regR, (tab.curLevel-obj.level), obj.adr, obj.name);
 				  gen.RelOp(Op.EQU, reg, regR);
 				  gen.BranchFalse(nextCaseL);
 				}
