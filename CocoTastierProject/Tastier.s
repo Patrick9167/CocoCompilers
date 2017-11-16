@@ -158,95 +158,123 @@ L8
  LDR R2, =112
  ADD R2, R4, R2, LSL #2
  STR R18, [R2] ; month
-    LDR     R19, =1
+    LDR     R19, =7
+    ADD     R2, BP, #16
+    LDR     R1, =0
+    ADD     R2, R2, R1, LSL #2
+    STR     R19, [R2]        ; StackTopTemp
+ LDR R2, =112
+ ADD R2, R4, R2, LSL #2
+ LDR R20, [R2] ; month
+    ADD     R2, BP, #16
+    LDR     R1, =0
+    ADD     R2, R2, R1, LSL #2
+    LDR     R21, [R2]        ; StackTopTemp
+    ADD     R21, R21, R20
+    ADD     R2, BP, #16
+    LDR     R1, =0
+    ADD     R2, R2, R1, LSL #2
+    STR     R21, [R2]        ; StackTopTemp
+    LDR     R22, =5
+    ADD     R2, BP, #16
+    LDR     R1, =0
+    ADD     R2, R2, R1, LSL #2
+    LDR     R23, [R2]        ; StackTopTemp
+    LDR     R2, =111
+    ADD     R2, R4, R2, LSL #2
+    STR     R22, [R2, R23, LSL #2] ; value of testArr[]
+ LDR R2, =111
+ ADD R2, R4, R2, LSL #2
+ STR R22, [R2] ; testArr
+    LDR     R24, =1
     MOV     R2, BP          ; load current base pointer
     LDR     R2, [R2,#8]
     ADD     R2, R2, #16
     LDR     R1, =112
     ADD     R2, R2, R1, LSL #2
-    LDR     R20, [R2]        ; month
-    CMP     R19, R20
-    MOVEQ   R19, #1
-    MOVNE   R19, #0
-    MOVS    R19, R19          ; reset Z flag in CPSR
+    STR     R25, [R2]        ; month
+    CMP     R24, R25
+    MOVEQ   R24, #1
+    MOVNE   R24, #0
+    MOVS    R24, R24          ; reset Z flag in CPSR
     BEQ     L9              ; jump on condition false
-    LDR     R21, =1
+    LDR     R26, =1
  LDR R2, =111
  ADD R2, R4, R2, LSL #2
- STR R21, [R2] ; sum
+ STR R26, [R2] ; sum
     B       L10
 L9
-    LDR     R22, =2
+    LDR     R27, =2
     MOV     R2, BP          ; load current base pointer
     LDR     R2, [R2,#8]
     ADD     R2, R2, #16
     LDR     R1, =112
     ADD     R2, R2, R1, LSL #2
-    LDR     R23, [R2]        ; month
-    CMP     R22, R23
-    MOVEQ   R22, #1
-    MOVNE   R22, #0
-    MOVS    R22, R22          ; reset Z flag in CPSR
+    STR     R28, [R2]        ; month
+    CMP     R27, R28
+    MOVEQ   R27, #1
+    MOVNE   R27, #0
+    MOVS    R27, R27          ; reset Z flag in CPSR
     BEQ     L9              ; jump on condition false
-    LDR     R24, =2
+    LDR     R29, =2
  LDR R2, =111
  ADD R2, R4, R2, LSL #2
- STR R24, [R2] ; sum
+ STR R29, [R2] ; sum
 L9
-    LDR     R25, =3
+    LDR     R30, =3
     MOV     R2, BP          ; load current base pointer
     LDR     R2, [R2,#8]
     ADD     R2, R2, #16
     LDR     R1, =112
     ADD     R2, R2, R1, LSL #2
-    LDR     R26, [R2]        ; month
-    CMP     R25, R26
-    MOVEQ   R25, #1
-    MOVNE   R25, #0
-    MOVS    R25, R25          ; reset Z flag in CPSR
+    STR     R31, [R2]        ; month
+    CMP     R30, R31
+    MOVEQ   R30, #1
+    MOVNE   R30, #0
+    MOVS    R30, R30          ; reset Z flag in CPSR
     BEQ     L9              ; jump on condition false
-    LDR     R27, =3
+    LDR     R32, =3
  LDR R2, =111
  ADD R2, R4, R2, LSL #2
- STR R27, [R2] ; sum
+ STR R32, [R2] ; sum
     B       L10
 L9
-    LDR     R28, =4
+    LDR     R33, =4
     MOV     R2, BP          ; load current base pointer
     LDR     R2, [R2,#8]
     ADD     R2, R2, #16
     LDR     R1, =112
     ADD     R2, R2, R1, LSL #2
-    LDR     R29, [R2]        ; month
-    CMP     R28, R29
-    MOVEQ   R28, #1
-    MOVNE   R28, #0
-    MOVS    R28, R28          ; reset Z flag in CPSR
+    STR     R34, [R2]        ; month
+    CMP     R33, R34
+    MOVEQ   R33, #1
+    MOVNE   R33, #0
+    MOVS    R33, R33          ; reset Z flag in CPSR
     BEQ     L9              ; jump on condition false
-    LDR     R30, =4
+    LDR     R35, =4
  LDR R2, =111
  ADD R2, R4, R2, LSL #2
- STR R30, [R2] ; sum
-    LDR     R31, =11
-    MOV     R0, R31
+ STR R35, [R2] ; sum
+    LDR     R36, =11
+    MOV     R0, R36
     BL      TastierPrintInt
     B       L10
 L9
-    LDR     R32, =5
+    LDR     R37, =5
     MOV     R2, BP          ; load current base pointer
     LDR     R2, [R2,#8]
     ADD     R2, R2, #16
     LDR     R1, =112
     ADD     R2, R2, R1, LSL #2
-    LDR     R33, [R2]        ; month
-    CMP     R32, R33
-    MOVEQ   R32, #1
-    MOVNE   R32, #0
-    MOVS    R32, R32          ; reset Z flag in CPSR
+    STR     R38, [R2]        ; month
+    CMP     R37, R38
+    MOVEQ   R37, #1
+    MOVNE   R37, #0
+    MOVS    R37, R37          ; reset Z flag in CPSR
     BEQ     L9              ; jump on condition false
 L9
-    LDR     R34, =10
-    MOV     R0, R34
+    LDR     R39, =10
+    MOV     R0, R39
     BL      TastierPrintInt
 L10
     B       L6

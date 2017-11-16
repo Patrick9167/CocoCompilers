@@ -25,6 +25,7 @@ program Test {
 
       j := i;
       sum := 0;
+
       Add();
       write "The sum of the values from 1 to ";
       write j; write " is ";
@@ -40,6 +41,8 @@ program Test {
          read i;
 
       month := 4;
+      testArr[7, month] := 5;
+      sum := testArr[7, month];
       switch(month) {
        case 1 : sum := 1;
                 break;
@@ -50,7 +53,7 @@ program Test {
        case 4 : sum := 4;
                 write 11;
                 break;
-       case 5 : 
+       case 5 :
        default : write 10;
 
       }

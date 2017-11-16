@@ -95,14 +95,22 @@ CondExpr<out int reg,	//Conditional expression
 /*-------------------------------------------------------------------------------------------*/
 
 Primary<out int reg,     // load Primary into register
-        out int type>    (. int n; Obj obj; string name; .)
+        out int type>    (. int n; Obj obj; string name; int regT;.)
 =                        (.
                             type = undef;
                             reg = gen.GetRegister();
                          .)
  (Ident<out name>     	 (.
                             obj = tab.Find(name); type = obj.type;
-                            if (obj.kind == var || obj.kind == constant) {
+                            if(obj.kind == array)
+                            {
+                              regT = gen.GetRegister();
+                              if (obj.level == 0)
+                                gen.LoadIndexedLocal(regT,  tab.curLevel-obj.level, obj.adr, name);
+                              else
+                                gen.LoadGlobal(reg, tab.curLevel-obj.level, obj.adr, name);
+                            }
+                            else if (obj.kind == var || obj.kind == constant) {
                                if (obj.level == 0)
                                   gen.LoadGlobal(reg, obj.adr, name);
                                else
@@ -241,25 +249,27 @@ SimExpr<out int reg,     //load value of SimExpr into register
 
 /*-------------------------------------------------------------------------------------------*/
 
-Stat                     (. int type, typeT; string name; Obj obj; int reg, regT, regO, regL, typeL;.)
+Stat                     (. int type; string name; Obj obj; int reg, regT;.)
 = Ident<out name>        (. obj = tab.Find(name); .)
   (
 [
   "["
        Expr<out reg,
-              out type>  (.if( type == integer) {
-                              regO = gen.GetRegister();
-                              gen.StoreLocal(reg, tab.curLevel-obj.level, obj.adr, "temp");
-                            }
-                           else SemErr("Invalid Index");
+              out type>  (.if( type == integer)
+                               gen.StoreLocal(reg, 0, tab.topScope.nextAdr++, "StackTopTemp"); //PUSH ONTO STACK
+                           else SemErr("Invalid Index");        //Expr<> makes used registers available
                            .)
 
       [
        ","
           Expr<out reg,
-               out type> (.if(type==integer)
-                              gen.AddOp(Op.ADD, regO, reg);
-                            else SemErr("Invalid Index");.)
+               out type> (.if(type==integer) {
+                            regT = gen.GetRegister();
+                            gen.LoadLocal(regT, 0, --tab.topScope.nextAdr, "StackTopTemp");
+                            gen.AddOp(Op.ADD, regT, reg);
+                            gen.StoreLocal(regT, 0, tab.topScope.nextAdr++, "StackTopTemp");
+                          }
+                          else SemErr("Invalid Index");.)
       ]
   "]"
 
@@ -278,9 +288,12 @@ Stat                     (. int type, typeT; string name; Obj obj; int reg, regT
                             if (type == obj.type)
                             {
                                if(obj.kind==array) {
-                                  if(obj.level==0)
-                                    gen.StoreIndexedGlobal(reg, obj.adr, regO, name);
-                                  else gen.StoreIndexedLocal(reg, tab.curLevel-obj.level, obj.adr, regO, name);
+                                  regT=gen.GetRegister();
+                                  if(obj.level==0){
+                                    gen.LoadLocal(regT, 0, --tab.topScope.nextAdr, "StackTopTemp");
+                                    gen.StoreIndexedGlobal(reg, obj.adr, regT, name);
+                                    }
+                                  else gen.StoreIndexedLocal(reg, tab.curLevel-obj.level, obj.adr, regT, name);
                                }
                                if (obj.level == 0)
                                   gen.StoreGlobal(reg, obj.adr, name);
@@ -521,4 +534,9 @@ Bound<out int bound>
                           bound = Convert.ToInt32(t.val);
                        .)
 .
+
+/*-------------------------------------------------------------------------------------------*/
+
+//ArrIndex<out reg,
+
 END Tastier.

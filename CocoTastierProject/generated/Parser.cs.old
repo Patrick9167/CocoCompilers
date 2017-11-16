@@ -224,7 +224,7 @@ out type);
 
 	void Primary(out int reg,     // load Primary into register
 out int type) {
-		int n; Obj obj; string name; 
+		int n; Obj obj; string name; int regT;
 		type = undef;
 		reg = gen.GetRegister();
 		
@@ -232,7 +232,15 @@ out int type) {
 		case 2: {
 			Ident(out name);
 			obj = tab.Find(name); type = obj.type;
-			if (obj.kind == var || obj.kind == constant) {
+			if(obj.kind == array)
+			{
+			 regT = gen.GetRegister();
+			 if (obj.level == 0)
+			   gen.LoadIndexedLocal(regT,  tab.curLevel-obj.level, obj.adr, name));
+			 else
+			   gen.LoadGlobal(reg, tab.curLevel-obj.level, obj.adr, name);
+			}
+			else if (obj.kind == var || obj.kind == constant) {
 			  if (obj.level == 0)
 			     gen.LoadGlobal(reg, obj.adr, name);
 			  else
@@ -391,7 +399,7 @@ out type);
 	}
 
 	void Stat() {
-		int type, typeT; string name; Obj obj; int reg, regT, regO, regL, typeL;
+		int type; string name; Obj obj; int reg, regT;
 		switch (la.kind) {
 		case 2: {
 			Ident(out name);
@@ -401,19 +409,20 @@ out type);
 					Get();
 					Expr(out reg,
  out type);
-					regO = reg;
-					if( type == integer) {
-					regO = gen.GetRegister();
-					gen.StoreLocal(reg, tab.curLevel-obj.level, obj.adr, "temp");
-					}
-					else SemErr("Invalid Index");
+					if( type == integer)
+					   gen.StoreLocal(reg, 0, tab.topScope.nextAdr++, "StackTopTemp"); //PUSH ONTO STACK
+					else SemErr("Invalid Index");        //Expr<> makes used registers available
 					
 					if (la.kind == 27) {
 						Get();
 						Expr(out reg,
 out type);
-						if(type==integer || type == constant)
-						  gen.AddOp(Op.ADD, regO, reg);
+						if(type==integer) {
+						regT = gen.GetRegister();
+						gen.LoadLocal(regT, 0, --tab.topScope.nextAdr, "StackTopTemp");
+						gen.AddOp(Op.ADD, regT, reg);
+						gen.StoreLocal(regT, 0, tab.topScope.nextAdr++, "StackTopTemp");
+						}
 						else SemErr("Invalid Index");
 					}
 					Expect(28);
@@ -431,9 +440,12 @@ out type);
 				if (type == obj.type)
 				{
 				  if(obj.kind==array) {
-				     if(obj.level==0)
-				       gen.StoreIndexedGlobal(reg, obj.adr, regO, name);
-				     else gen.StoreIndexedLocal(reg, tab.curLevel-obj.level, obj.adr, regO, name);
+				     regT=gen.GetRegister();
+				     if(obj.level==0){
+				       gen.LoadLocal(regT, 0, --tab.topScope.nextAdr, "StackTopTemp");
+				       gen.StoreIndexedGlobal(reg, obj.adr, regT, name);
+				       }
+				     else gen.StoreIndexedLocal(reg, tab.curLevel-obj.level, obj.adr, regT, name);
 				  }
 				  if (obj.level == 0)
 				     gen.StoreGlobal(reg, obj.adr, name);
