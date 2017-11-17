@@ -224,7 +224,7 @@ out type);
 
 	void Primary(out int reg,     // load Primary into register
 out int type) {
-		int n; Obj obj; string name; int regT;
+		int n; Obj obj; string name; int regT; int regIndex;
 		type = undef;
 		reg = gen.GetRegister();
 		
@@ -232,26 +232,32 @@ out int type) {
 		case 2: {
 			Ident(out name);
 			obj = tab.Find(name); type = obj.type;
-			if(obj.kind == array)
-			{
-			 regT = gen.GetRegister();
-			 if (obj.level == 0)
-			   gen.LoadIndexedLocal(regT,  tab.curLevel-obj.level, obj.adr, name);
-			 else
-			   gen.LoadGlobal(reg, tab.curLevel-obj.level, obj.adr, name);
-			}
-			else if (obj.kind == var || obj.kind == constant) {
-			  if (obj.level == 0)
-			     gen.LoadGlobal(reg, obj.adr, name);
-			  else
-			     gen.LoadLocal(reg, tab.curLevel-obj.level, obj.adr, name);
-			  if (type == boolean)
-			  // reset Z flag in CPSR
-			     gen.ResetZ(reg);
 			
-			}
-			else SemErr("variable expected");
-			
+			if (la.kind == 26) {
+				ArrIndex(out regIndex);
+				if(obj.kind == array)
+				{
+				 regT = gen.GetRegister();
+				 if (obj.level == 0)
+				   gen.LoadIndexedLocal(regT,  tab.curLevel-obj.level,  obj.adr, regIndex, name);
+				 else
+				   gen.LoadIndexedGlobal(reg, obj.adr, regIndex, name);
+				}
+				
+			} else if (StartOf(2)) {
+				if (obj.kind == var || obj.kind == constant) {
+				  if (obj.level == 0)
+				     gen.LoadGlobal(reg, obj.adr, name);
+				  else
+				     gen.LoadLocal(reg, tab.curLevel-obj.level, obj.adr, name);
+				  if (type == boolean)
+				  // reset Z flag in CPSR
+				     gen.ResetZ(reg);
+				
+				}
+				else SemErr("variable expected");
+				
+			} else SynErr(48);
 			break;
 		}
 		case 1: {
@@ -293,13 +299,39 @@ out type);
 			Expect(11);
 			break;
 		}
-		default: SynErr(48); break;
+		default: SynErr(49); break;
 		}
 	}
 
 	void Ident(out string name) {
 		Expect(2);
 		name = t.val; 
+	}
+
+	void ArrIndex(out int regIndex) {
+		int reg, regT, type;
+		Expect(26);
+		Expr(out reg,
+ out type);
+		if( type == integer)
+		   gen.StoreLocal(reg, 0, tab.topScope.nextAdr++, "StackTopTemp"); //PUSH ONTO STACK
+		else SemErr("Invalid Index");        //Expr<> makes used registers available
+		
+		if (la.kind == 27) {
+			Get();
+			Expr(out reg,
+out type);
+			if(type==integer) {
+			regT = gen.GetRegister();
+			gen.LoadLocal(regT, 0, --tab.topScope.nextAdr, "StackTopTemp");
+			gen.AddOp(Op.ADD, reg, regT);
+			gen.StoreLocal(reg, 0, tab.topScope.nextAdr++, "StackTopTemp");
+			}
+			else SemErr("Invalid Index");
+		}
+		regIndex=reg;
+		
+		Expect(28);
 	}
 
 	void String(out string text) {
@@ -325,7 +357,7 @@ out type);
 				Get();
 			}
 			op = Op.MOD; 
-		} else SynErr(49);
+		} else SynErr(50);
 	}
 
 	void ProcDecl(string progName) {
@@ -356,7 +388,7 @@ out type);
 		}
 		
 		Stat();
-		while (StartOf(2)) {
+		while (StartOf(3)) {
 			Stat();
 		}
 		Expect(19);
@@ -395,7 +427,7 @@ out type);
 				tab.NewObj(name, var, type); 
 			}
 			Expect(30);
-		} else SynErr(50);
+		} else SynErr(51);
 	}
 
 	void Stat() {
@@ -461,7 +493,7 @@ out type);
 				  gen.Call(name);
 				else SemErr("object is not a procedure");
 				
-			} else SynErr(51);
+			} else SynErr(52);
 			break;
 		}
 		case 31: {
@@ -514,7 +546,7 @@ out type);
 				else SemErr("Must be the same type!");
 				
 				Expect(7);
-				while (StartOf(2)) {
+				while (StartOf(3)) {
 					Stat();
 				}
 				if (la.kind == 35) {
@@ -525,7 +557,7 @@ out type);
 			}
 			Expect(36);
 			Expect(7);
-			while (StartOf(2)) {
+			while (StartOf(3)) {
 				Stat();
 			}
 			if (la.kind == 35) {
@@ -574,7 +606,7 @@ out type);
 		case 39: {
 			Get();
 			string text; 
-			if (StartOf(3)) {
+			if (StartOf(4)) {
 				Expr(out reg,
 out type);
 				switch (type) {
@@ -587,7 +619,7 @@ out type);
 			} else if (la.kind == 3) {
 				String(out text);
 				gen.WriteString(text); 
-			} else SynErr(52);
+			} else SynErr(53);
 			Expect(30);
 			break;
 		}
@@ -612,14 +644,14 @@ out type);
 				VarDecl();
 			}
 			Stat();
-			while (StartOf(2)) {
+			while (StartOf(3)) {
 				Stat();
 			}
 			Expect(19);
 			tab.CloseSubScope(); 
 			break;
 		}
-		default: SynErr(53); break;
+		default: SynErr(54); break;
 		}
 	}
 
@@ -628,7 +660,7 @@ out int type) {
 		int typeR, regR; Op op; 
 		Primary(out reg,
 out type);
-		while (StartOf(4)) {
+		while (StartOf(5)) {
 			MulOp(out op);
 			Primary(out regR,
 out typeR);
@@ -684,7 +716,7 @@ out type);
 		} else if (la.kind == 43) {
 			Get();
 			type = boolean; 
-		} else SynErr(54);
+		} else SynErr(55);
 	}
 
 	void Bound(out int bound) {
@@ -707,6 +739,7 @@ out type);
 	static readonly bool[,] set = {
 		{T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
 		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,T,T,T, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
+		{x,x,T,x, T,T,T,T, x,x,x,T, T,T,T,T, T,x,T,x, T,T,T,T, T,T,x,T, T,x,T,T, x,T,x,x, x,T,T,T, T,x,x,x, x,x,x},
 		{x,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,x, x,x,x,x, x,x,x,x, x,x,x,T, x,T,x,x, x,T,T,T, T,x,x,x, x,x,x},
 		{x,T,T,x, x,T,x,x, T,T,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
 		{x,x,x,x, x,x,x,x, x,x,x,x, T,T,T,T, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x}
@@ -772,12 +805,13 @@ public class Errors {
 			case 46: s = "invalid AddOp"; break;
 			case 47: s = "invalid RelOp"; break;
 			case 48: s = "invalid Primary"; break;
-			case 49: s = "invalid MulOp"; break;
-			case 50: s = "invalid VarDecl"; break;
-			case 51: s = "invalid Stat"; break;
+			case 49: s = "invalid Primary"; break;
+			case 50: s = "invalid MulOp"; break;
+			case 51: s = "invalid VarDecl"; break;
 			case 52: s = "invalid Stat"; break;
 			case 53: s = "invalid Stat"; break;
-			case 54: s = "invalid Type"; break;
+			case 54: s = "invalid Stat"; break;
+			case 55: s = "invalid Type"; break;
 
 			default: s = "error " + n; break;
 		}

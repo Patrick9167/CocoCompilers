@@ -95,22 +95,33 @@ CondExpr<out int reg,	//Conditional expression
 /*-------------------------------------------------------------------------------------------*/
 
 Primary<out int reg,     // load Primary into register
-        out int type>    (. int n; Obj obj; string name; int regT;.)
+        out int type>    (. int n; Obj obj; string name; int regT; int regIndex;.)
 =                        (.
                             type = undef;
                             reg = gen.GetRegister();
                          .)
  (Ident<out name>     	 (.
                             obj = tab.Find(name); type = obj.type;
+                          .)
+
+(
+ArrIndex <out regIndex>
+
+                          (.
                             if(obj.kind == array)
                             {
                               regT = gen.GetRegister();
                               if (obj.level == 0)
-                                gen.LoadIndexedLocal(regT,  tab.curLevel-obj.level, obj.adr, name);
+                                gen.LoadIndexedLocal(regT,  tab.curLevel-obj.level,  obj.adr, regIndex, name);
                               else
-                                gen.LoadGlobal(reg, tab.curLevel-obj.level, obj.adr, name);
+                                gen.LoadIndexedGlobal(reg, obj.adr, regIndex, name);
                             }
-                            else if (obj.kind == var || obj.kind == constant) {
+                          .)
+
+
+|
+                          (.
+                            if (obj.kind == var || obj.kind == constant) {
                                if (obj.level == 0)
                                   gen.LoadGlobal(reg, obj.adr, name);
                                else
@@ -122,7 +133,7 @@ Primary<out int reg,     // load Primary into register
                             }
                             else SemErr("variable expected");
                          .)
-
+)
   | number               (.
                             type = integer;
                             n = Convert.ToInt32(t.val);
@@ -534,9 +545,33 @@ Bound<out int bound>
                           bound = Convert.ToInt32(t.val);
                        .)
 .
-
 /*-------------------------------------------------------------------------------------------*/
 
-//ArrIndex<out reg,
+ArrIndex<out int regIndex>  (.int reg, regT, type;.)
+=
+"["
+     Expr<out reg,
+            out type>  (.if( type == integer)
+                             gen.StoreLocal(reg, 0, tab.topScope.nextAdr++, "StackTopTemp"); //PUSH ONTO STACK
+                         else SemErr("Invalid Index");        //Expr<> makes used registers available
+                         .)
+
+    [
+     ","
+        Expr<out reg,
+             out type> (.if(type==integer) {
+                          regT = gen.GetRegister();
+                          gen.LoadLocal(regT, 0, --tab.topScope.nextAdr, "StackTopTemp");
+                          gen.AddOp(Op.ADD, reg, regT);
+                          gen.StoreLocal(reg, 0, tab.topScope.nextAdr++, "StackTopTemp");
+                        }
+                        else SemErr("Invalid Index");.)
+    ]
+
+                      (.
+                        regIndex=reg;
+                       .)
+"]"
+.
 
 END Tastier.
