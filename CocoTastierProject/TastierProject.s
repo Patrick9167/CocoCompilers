@@ -247,7 +247,7 @@ L8
     ADD     R2, R2, #16
     LDR     R1, =112
     ADD     R2, R2, R1, LSL #2
-    STR     R30, [R2]        ; month
+    LDR     R30, [R2]        ; month
     CMP     R29, R30
     MOVEQ   R29, #1
     MOVNE   R29, #0
@@ -265,7 +265,7 @@ L9
     ADD     R2, R2, #16
     LDR     R1, =112
     ADD     R2, R2, R1, LSL #2
-    STR     R33, [R2]        ; month
+    LDR     R33, [R2]        ; month
     CMP     R32, R33
     MOVEQ   R32, #1
     MOVNE   R32, #0
@@ -282,7 +282,7 @@ L9
     ADD     R2, R2, #16
     LDR     R1, =112
     ADD     R2, R2, R1, LSL #2
-    STR     R36, [R2]        ; month
+    LDR     R36, [R2]        ; month
     CMP     R35, R36
     MOVEQ   R35, #1
     MOVNE   R35, #0
@@ -300,7 +300,7 @@ L9
     ADD     R2, R2, #16
     LDR     R1, =112
     ADD     R2, R2, R1, LSL #2
-    STR     R39, [R2]        ; month
+    LDR     R39, [R2]        ; month
     CMP     R38, R39
     MOVEQ   R38, #1
     MOVNE   R38, #0
@@ -321,7 +321,7 @@ L9
     ADD     R2, R2, #16
     LDR     R1, =112
     ADD     R2, R2, R1, LSL #2
-    STR     R43, [R2]        ; month
+    LDR     R43, [R2]        ; month
     CMP     R42, R43
     MOVEQ   R42, #1
     MOVNE   R42, #0

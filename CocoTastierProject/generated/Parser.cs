@@ -539,7 +539,7 @@ out type);
 out type);
 				if(type == obj.type) {
 				  regR = gen.GetRegister();
-				  gen.StoreLocal(regR, (tab.curLevel-obj.level), obj.adr, obj.name);
+				  gen.LoadLocal(regR, (tab.curLevel-obj.level), obj.adr, obj.name);
 				  gen.RelOp(Op.EQU, reg, regR);
 				  gen.BranchFalse(nextCaseL);
 				}
