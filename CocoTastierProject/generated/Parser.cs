@@ -147,9 +147,9 @@ out typeR);
 			if (la.kind == 6) {
 				CondExpr(out reg,
 out type);
-				gen.ClearRegisters(); 
 			}
 		}
+		gen.ClearRegisters(); 
 	}
 
 	void SimExpr(out int reg,     //load value of SimExpr into register
@@ -227,6 +227,7 @@ out int type) {
 		int n; Obj obj; string name; int regT; int regIndex;
 		type = undef;
 		reg = gen.GetRegister();
+		Console.WriteLine(";" + reg);
 		
 		switch (la.kind) {
 		case 2: {

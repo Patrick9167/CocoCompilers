@@ -69,9 +69,10 @@ Expr<out int reg,        // load value of Expr into register
    [
       CondExpr<out reg,
                out type>
-                          (. gen.ClearRegisters(); .)
+
    ]
    ]
+                            (. gen.ClearRegisters(); .)
 .
 
 /*-------------------------------------------------------------------------------------------*/
@@ -99,6 +100,7 @@ Primary<out int reg,     // load Primary into register
 =                        (.
                             type = undef;
                             reg = gen.GetRegister();
+                            Console.WriteLine(";" + reg);
                          .)
  (Ident<out name>     	 (.
                             obj = tab.Find(name); type = obj.type;
