@@ -40,10 +40,10 @@ program Test {
          write "Enter value for i (or 0 to stop): ";
          read i;
 
-      month := 4;
-      testArr[7, month] := 5;
-      sum := testArr[7, month];
-      switch(month) {
+      randy := 4;
+      testArr[7, randy] := 5;
+      sum := testArr[7, randy];
+      switch(randy) {
        case 1 : sum := 1;
                 break;
        case 2 : sum := 2;
