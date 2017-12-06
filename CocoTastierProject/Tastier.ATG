@@ -339,7 +339,7 @@ Stat                     (. int type; string name; Obj obj; int reg, regT;.)
       Stat
       ]               	 (. gen.Label(l2); .)
 
-
+| "for"
 
 | "switch"              (.int breakL, nextCaseL, regR;
                           nextCaseL = gen.NewLabel();
@@ -574,6 +574,11 @@ ArrIndex<out int regIndex>  (.int reg, regT, type;.)
                         regIndex=reg;
                        .)
 "]"
+.
+
+/*-------------------------------------------------------------------------------------------*/
+For
+
 .
 
 END Tastier.

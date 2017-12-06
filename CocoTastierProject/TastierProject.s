@@ -200,7 +200,7 @@ L8
     LDR     R5, =4
  LDR R2, =112
  ADD R2, R4, R2, LSL #2
- STR R5, [R2] ; month
+ STR R5, [R2] ; randy
 ;5
     LDR     R5, =7
     ADD     R2, BP, #16
@@ -210,12 +210,12 @@ L8
 ;5
  LDR R2, =112
  ADD R2, R4, R2, LSL #2
- LDR R5, [R2] ; month
+ LDR R5, [R2] ; randy
     ADD     R2, BP, #16
     LDR     R1, =0
     ADD     R2, R2, R1, LSL #2
     LDR     R5, [R2]        ; StackTopTemp
-    ADD     R5, R5, R5
+    MUL     R5, R5, R5
     ADD     R2, BP, #16
     LDR     R1, =0
     ADD     R2, R2, R1, LSL #2
@@ -242,12 +242,12 @@ L8
 ;5
  LDR R2, =112
  ADD R2, R4, R2, LSL #2
- LDR R5, [R2] ; month
+ LDR R5, [R2] ; randy
     ADD     R2, BP, #16
     LDR     R1, =0
     ADD     R2, R2, R1, LSL #2
     LDR     R5, [R2]        ; StackTopTemp
-    ADD     R5, R5, R5
+    MUL     R5, R5, R5
     ADD     R2, BP, #16
     LDR     R1, =0
     ADD     R2, R2, R1, LSL #2
@@ -268,7 +268,7 @@ L8
     ADD     R2, R2, #16
     LDR     R1, =112
     ADD     R2, R2, R1, LSL #2
-    LDR     R5, [R2]        ; month
+    LDR     R5, [R2]        ; randy
     CMP     R5, R5
     MOVEQ   R5, #1
     MOVNE   R5, #0
@@ -288,7 +288,7 @@ L9
     ADD     R2, R2, #16
     LDR     R1, =112
     ADD     R2, R2, R1, LSL #2
-    LDR     R5, [R2]        ; month
+    LDR     R5, [R2]        ; randy
     CMP     R5, R5
     MOVEQ   R5, #1
     MOVNE   R5, #0
@@ -307,7 +307,7 @@ L9
     ADD     R2, R2, #16
     LDR     R1, =112
     ADD     R2, R2, R1, LSL #2
-    LDR     R5, [R2]        ; month
+    LDR     R5, [R2]        ; randy
     CMP     R5, R5
     MOVEQ   R5, #1
     MOVNE   R5, #0
@@ -327,7 +327,7 @@ L9
     ADD     R2, R2, #16
     LDR     R1, =112
     ADD     R2, R2, R1, LSL #2
-    LDR     R5, [R2]        ; month
+    LDR     R5, [R2]        ; randy
     CMP     R5, R5
     MOVEQ   R5, #1
     MOVNE   R5, #0
@@ -351,7 +351,7 @@ L9
     ADD     R2, R2, #16
     LDR     R1, =112
     ADD     R2, R2, R1, LSL #2
-    LDR     R5, [R2]        ; month
+    LDR     R5, [R2]        ; randy
     CMP     R5, R5
     MOVEQ   R5, #1
     MOVNE   R5, #0
@@ -377,7 +377,7 @@ Main
 ;OBJECT--Name: test. Global procedure with address 1
 ;OBJECT--Name: testArr. Global procedure with address 111
 ;OBJECT--Name: sum. Global variable of type Integer with address 111
-;OBJECT--Name: month. Global variable of type Integer with address 112
+;OBJECT--Name: randy. Global variable of type Integer with address 112
 ;OBJECT--Name: SumUp. Global procedure with address 0
 ;OBJECT--Name: main. Global procedure with address 0
 

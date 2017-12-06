@@ -325,7 +325,7 @@ out type);
 			if(type==integer) {
 			regT = gen.GetRegister();
 			gen.LoadLocal(regT, 0, --tab.topScope.nextAdr, "StackTopTemp");
-			gen.AddOp(Op.ADD, reg, regT);
+			gen.MulOp(Op.MUL, reg, regT);
 			gen.StoreLocal(reg, 0, tab.topScope.nextAdr++, "StackTopTemp");
 			}
 			else SemErr("Invalid Index");
@@ -453,7 +453,7 @@ out type);
 						if(type==integer) {
 						regT = gen.GetRegister();
 						gen.LoadLocal(regT, 0, --tab.topScope.nextAdr, "StackTopTemp");
-						gen.AddOp(Op.ADD, regT, reg);
+						gen.MulOp(Op.MUL, regT, reg);
 						gen.StoreLocal(regT, 0, tab.topScope.nextAdr++, "StackTopTemp");
 						}
 						else SemErr("Invalid Index");

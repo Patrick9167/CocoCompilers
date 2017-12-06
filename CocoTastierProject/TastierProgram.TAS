@@ -7,7 +7,7 @@ program Test {
    const int test = 99999;
    int testArr[20, 89];
    int sum;
-   int month;
+   int randy;
    void SumUp() {
       int j, sum;
 
