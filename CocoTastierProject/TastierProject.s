@@ -363,13 +363,33 @@ L9
     MOV     R0, R6
     BL      TastierPrintInt
 L10
+    LDR     R5, =0
+    ADD     R2, BP, #16
+    LDR     R1, =1
+    ADD     R2, R2, R1, LSL #2
+    STR     R5, [R2]        ; j
+;6
+    LDR     R6, =5
+L12
+    CMP     R5, R-1
+    SUB     R5, R5, #1
+;5
+    LDR     R5, =5
+ LDR R2, =112
+ ADD R2, R4, R2, LSL #2
+ STR R5, [R2] ; randy
+    CMP     R5, R6
+    MOVLT   R5, #1
+    MOVGE   R5, #0
+    MOVS    R5, R5          ; reset Z flag in CPSR
+    BNE     L12              ; jump on condition true
     B       L6
 L7
 StopTest
     B       StopTest
 Main
     LDR     R0, =1          ; current lexic level
-    LDR     R1, =1          ; number of local variables
+    LDR     R1, =2          ; number of local variables
     BL      enter           ; build new stack frame
     B       MainBody
 

@@ -5,7 +5,8 @@ namespace Tastier {
 
 public enum Op { // opcodes
    ADD, SUB, MUL, DIV, MOD,
-   EQU, LSS, LEQ, GTR, GEQ, NEQ
+   EQU, LSS, LEQ, GTR, GEQ, NEQ,
+   IBO, DBO, IBN, DBN
 }
 
 public class CodeGenerator {
@@ -300,7 +301,7 @@ public class CodeGenerator {
          Console.WriteLine("    SUB     R{0}, R{0}, R{1}", leftOp, rightOp);
    }
 
-// method to generate ARM assembly language code for 
+// method to generate ARM assembly language code for
    public void MulOp(Op op, int leftOp, int rightOp) {
       switch (op) {
          case Op.MUL: // note: ordering of operands in generated instruction
@@ -318,6 +319,21 @@ public class CodeGenerator {
                       break;
       }
    }
+
+// method to generate ARM assembly language code for Incrop
+    public void IncrOp(Op op, int leftOp, int rightOp) {
+       Console.WriteLine("    CMP     R{0}, R{1}", leftOp, rightOp);
+       switch (op) {
+          case Op.IBO: Console.WriteLine("    ADD     R{0}, R{0}, #1", leftOp);
+                       break;
+          case Op.DBO: Console.WriteLine("    SUB     R{0}, R{0}, #1", leftOp);
+                       break;
+          case Op.IBN: Console.WriteLine("    ADD     R{0}, R{0}, R{1}", leftOp, rightOp);
+                       break;
+          case Op.DBN: Console.WriteLine("    SUB     R{0}, R{0}, R{1}", leftOp, rightOp);
+                       break;
+       }
+      }
 
 // method to generate ARM assembly language code to print integer vaue
    public void WriteInteger(int register, bool newLine) {

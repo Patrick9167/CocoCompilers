@@ -58,6 +58,12 @@ program Test {
 
       }
 
+      for(int j:=0; j<5; j--)
+      {
+        randy := 5;
+
+      }
+
 
       }
    }

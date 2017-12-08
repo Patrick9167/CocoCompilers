@@ -4,7 +4,7 @@ COMPILER Tastier
       var = 0, proc = 1, scope =2, constant=3, array=4;
 
    const int // types
-      undef = 0, integer = 1, boolean = 2;
+      undef = 0, integer = 1, boolean = 2, struct=3;
 
    public SymbolTable tab;
    public CodeGenerator gen;
@@ -246,6 +246,17 @@ RelOp<out Op op>
 
 /*-------------------------------------------------------------------------------------------*/
 
+IncrOp<out Op op>
+=                         (. op = Op.IBO; .)
+  ( "++"
+  | "--"                  (. op = Op.DBO; .)
+  | "+="                  (. op = Op.IBN; .)
+  | "-="                  (. op = Op.DBN; .)
+  )
+.
+
+/*-------------------------------------------------------------------------------------------*/
+
 SimExpr<out int reg,     //load value of SimExpr into register
         out int type>    (. int typeR, regR; Op op; .)
 = Term<out reg,
@@ -339,7 +350,28 @@ Stat                     (. int type; string name; Obj obj; int reg, regT;.)
       Stat
       ]               	 (. gen.Label(l2); .)
 
-| "for"
+| "for"                 (. int exitL, anotherL, index;
+                            exitL = gen.NewLabel();
+                            anotherL = gen.NewLabel();.)
+
+  "("
+    ForDecl<out int regIndex,
+        out Op compOp,
+        out int regBound,
+        out Op incOp,
+        out int regIncrement> (. index = regIndex;.)                    //temp for index
+  ")"
+  "{"                         (.gen.Label(anotherL);
+                                gen.RelOp(compOp, index,regBound);
+                                gen.BranchFalse(exitL);.) //for increment/decrement
+    {
+      Stat                          //Multiple statements
+    }
+                          (. gen.IncrOp(incOp, index,regIncrement);
+                             gen.Branch(anotherL);
+                          .)
+  "}"
+                          (.gen.Label(exitL);.)
 
 | "switch"              (.int breakL, nextCaseL, regR;
                           nextCaseL = gen.NewLabel();
@@ -577,8 +609,71 @@ ArrIndex<out int regIndex>  (.int reg, regT, type;.)
 .
 
 /*-------------------------------------------------------------------------------------------*/
-For
+ForDecl<out int regIndex,
+        out Op compOp,
+        out int regBound,
+        out Op incOp,
+        out int regIncrement> (.Obj obj; int index, reg, type, n; String name;.)
+=
+
+Type<out type>
+Ident<out name>       (.  tab.NewObj(name, var, type);
+                          obj = tab.Find(name);
+                          if(obj.type != integer)
+                            SemErr("Must be an Integer"); .)
+":="
+number               (.
+                         type = integer;
+                         n = Convert.ToInt32(t.val);
+                         index = gen.GetRegister();
+                         gen.LoadConstant(index, n);
+                         if (obj.level == 0)
+                            gen.StoreGlobal(index, obj.adr, name);
+                         else gen.StoreLocal(index, tab.curLevel-obj.level, obj.adr, name);
+                          .)
+
+
+  ";"
+  Ident<out name>     (.  obj = tab.Find(name);
+                          if(obj.type != integer)
+                            SemErr("Must be an Integer");
+                          regIndex = index;
+                          .)
+ RelOp<out Op Rop>     (.compOp = Rop;.)
+ Expr<out reg,
+      out type>       (.if(obj.type != integer)
+                          SemErr("Must be an integer!");
+                        regBound = reg;
+                        .)
+ ";"
+ Ident<out name>       (.obj = tab.Find(name);
+                         if(obj.type != integer)
+                           SemErr("Must be an Integer"); .)
+ IncrOp<out Op op>     (.incOp=op;
+                          regIncrement = -1;.)
+[
+ Expr<out reg,
+      out type>       (.if(obj.type != integer)
+                          SemErr("Must be an integer!");
+                        regIncrement = reg;.)
+]
+
 
 .
+
+/*-------------------------------------------------------------------------------------------*/
+
+StructDecl              (.Obj obj; .)
+=
+"struct"
+Ident<out name>         (. obj = tab.NewObj(name, array, struct); .)
+"{"
+  {VarDecl}
+"}"
+";"
+
+.
+
+/*-------------------------------------------------------------------------------------------*/
 
 END Tastier.
