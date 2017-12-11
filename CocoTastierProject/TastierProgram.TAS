@@ -3,6 +3,12 @@
 
 program Test {
 
+    struct Books {
+    int  title[50];
+    int  author[50];
+    int  subject[100];
+    int   bookId;
+    };
    int i;
    const int test = 99999;
    int testArr[20, 89];
@@ -33,6 +39,9 @@ program Test {
    }
 
    void main() {
+      struct Books book1;
+      book1.bookId := 4;
+      book1.title[3] := 9;
       write "Enter value for i (or 0 to stop): ";
       read i;
       while i > 0 {

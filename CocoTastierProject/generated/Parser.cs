@@ -36,7 +36,7 @@ public class Parser {
 	public const int _number = 1;
 	public const int _ident = 2;
 	public const int _string = 3;
-	public const int maxT = 50;
+	public const int maxT = 51;
 
 	const bool T = true;
 	const bool x = false;
@@ -53,7 +53,7 @@ const int // object kinds
       var = 0, proc = 1, scope =2, constant=3, array=4;
 
    const int // types
-      undef = 0, integer = 1, boolean = 2;
+      undef = 0, integer = 1, boolean = 2, estruct = 3;
 
    public SymbolTable tab;
    public CodeGenerator gen;
@@ -126,7 +126,7 @@ const int // object kinds
 		} else if (la.kind == 5) {
 			Get();
 			op = Op.SUB; 
-		} else SynErr(51);
+		} else SynErr(52);
 	}
 
 	void Expr(out int reg,        // load value of Expr into register
@@ -200,7 +200,7 @@ out typeR);
 			op = Op.GEQ; 
 			break;
 		}
-		default: SynErr(52); break;
+		default: SynErr(53); break;
 		}
 	}
 
@@ -258,7 +258,7 @@ out int type) {
 				}
 				else SemErr("variable expected");
 				
-			} else SynErr(53);
+			} else SynErr(54);
 			break;
 		}
 		case 1: {
@@ -300,7 +300,7 @@ out type);
 			Expect(11);
 			break;
 		}
-		default: SynErr(54); break;
+		default: SynErr(55); break;
 		}
 	}
 
@@ -358,7 +358,7 @@ out type);
 				Get();
 			}
 			op = Op.MOD; 
-		} else SynErr(55);
+		} else SynErr(56);
 	}
 
 	void ProcDecl(string progName) {
@@ -375,8 +375,12 @@ out type);
 		Expect(10);
 		Expect(11);
 		Expect(18);
-		while (la.kind == 47 || la.kind == 48) {
-			VarDecl();
+		while (la.kind == 47 || la.kind == 48 || la.kind == 50) {
+			if (la.kind == 47 || la.kind == 48) {
+				VarDecl();
+			} else {
+				StructDecl();
+			}
 		}
 		while (la.kind == 17) {
 			ProcDecl(progName);
@@ -428,7 +432,26 @@ out type);
 				tab.NewObj(name, var, type); 
 			}
 			Expect(34);
-		} else SynErr(56);
+		} else SynErr(57);
+	}
+
+	void StructDecl() {
+		Obj obj; string name, tempName, initStruct;
+		Expect(50);
+		Ident(out initStruct);
+		obj = tab.Find(initStruct);
+		if(obj.type != estruct)
+		 SemErr("Must be a struct!");
+		Ident(out name);
+		tab.NewObj(name, array, estruct);  //new instance
+		obj = obj.next;
+		while(obj.name != "EndStruct")  //create new variable declarations with ident
+		{                               // "structname"."varname"
+		tempName = name + "." + obj.name;
+		tab.NewObj(tempName, obj.kind, obj.type, obj.length);
+		obj=obj.next;
+		}
+		Expect(34);
 	}
 
 	void Stat() {
@@ -494,7 +517,7 @@ out type);
 				  gen.Call(name);
 				else SemErr("object is not a procedure");
 				
-			} else SynErr(57);
+			} else SynErr(58);
 			break;
 		}
 		case 35: {
@@ -535,13 +558,14 @@ out int regIncrement);
 			Expect(11);
 			Expect(18);
 			gen.Label(anotherL);
-			gen.IncrOp(incOp, index,regIncrement);
+			gen.RelOp(compOp, index,regBound);
+			gen.BranchFalse(exitL);
 			while (StartOf(3)) {
 				Stat();
 			}
-			gen.RelOp(compOp, index,regBound);
-			gen.BranchTrue(anotherL);
-			
+			gen.IncrOp(incOp, index,regIncrement);
+			gen.Branch(anotherL);
+			gen.Label(exitL);
 			Expect(19);
 			break;
 		}
@@ -645,7 +669,7 @@ out type);
 			} else if (la.kind == 3) {
 				String(out text);
 				gen.WriteString(text); 
-			} else SynErr(58);
+			} else SynErr(59);
 			Expect(34);
 			break;
 		}
@@ -677,7 +701,7 @@ out type);
 			tab.CloseSubScope(); 
 			break;
 		}
-		default: SynErr(59); break;
+		default: SynErr(60); break;
 		}
 	}
 
@@ -694,7 +718,7 @@ out type);
 		} else if (la.kind == 29) {
 			Get();
 			op = Op.DBN; 
-		} else SynErr(60);
+		} else SynErr(61);
 	}
 
 	void Term(out int reg,        // load value of Term into register
@@ -773,11 +797,13 @@ out type);
 		Ident(out progName);
 		tab.OpenScope(); 
 		Expect(18);
-		while (la.kind == 47 || la.kind == 48 || la.kind == 49) {
+		while (StartOf(6)) {
 			if (la.kind == 47 || la.kind == 48) {
 				VarDecl();
-			} else {
+			} else if (la.kind == 49) {
 				ConstDecl();
+			} else {
+				StructInit();
 			}
 		}
 		while (la.kind == 17) {
@@ -804,6 +830,20 @@ out type);
 		Expect(34);
 	}
 
+	void StructInit() {
+		string name;
+		Expect(50);
+		Ident(out name);
+		tab.NewObj(name, array, estruct);
+		Expect(18);
+		while (la.kind == 47 || la.kind == 48) {
+			VarDecl();
+		}
+		Expect(19);
+		tab.NewObj("EndStruct", undef, estruct); 
+		Expect(34);
+	}
+
 	void Type(out int type) {
 		type = undef; 
 		if (la.kind == 47) {
@@ -812,7 +852,7 @@ out type);
 		} else if (la.kind == 48) {
 			Get();
 			type = boolean; 
-		} else SynErr(61);
+		} else SynErr(62);
 	}
 
 	void Bound(out int bound) {
@@ -833,12 +873,13 @@ out type);
 	}
 	
 	static readonly bool[,] set = {
-		{T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x},
-		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,T,T,T, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x},
-		{x,x,T,x, T,T,T,T, x,x,x,T, T,T,T,T, T,x,T,x, T,T,T,T, T,T,x,x, x,x,x,T, T,x,T,T, x,T,T,x, x,x,T,T, T,T,x,x, x,x,x,x},
-		{x,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,T,T,x, x,x,T,T, T,T,x,x, x,x,x,x},
-		{x,T,T,x, x,T,x,x, T,T,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x},
-		{x,x,x,x, x,x,x,x, x,x,x,x, T,T,T,T, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x}
+		{T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x},
+		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,T,T,T, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x},
+		{x,x,T,x, T,T,T,T, x,x,x,T, T,T,T,T, T,x,T,x, T,T,T,T, T,T,x,x, x,x,x,T, T,x,T,T, x,T,T,x, x,x,T,T, T,T,x,x, x,x,x,x, x},
+		{x,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,T,T,x, x,x,T,T, T,T,x,x, x,x,x,x, x},
+		{x,T,T,x, x,T,x,x, T,T,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x},
+		{x,x,x,x, x,x,x,x, x,x,x,x, T,T,T,T, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x},
+		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, T,T,T,x, x}
 
 	};
 } // end Parser
@@ -902,18 +943,19 @@ public class Errors {
 			case 47: s = "\"int\" expected"; break;
 			case 48: s = "\"bool\" expected"; break;
 			case 49: s = "\"const\" expected"; break;
-			case 50: s = "??? expected"; break;
-			case 51: s = "invalid AddOp"; break;
-			case 52: s = "invalid RelOp"; break;
-			case 53: s = "invalid Primary"; break;
+			case 50: s = "\"struct\" expected"; break;
+			case 51: s = "??? expected"; break;
+			case 52: s = "invalid AddOp"; break;
+			case 53: s = "invalid RelOp"; break;
 			case 54: s = "invalid Primary"; break;
-			case 55: s = "invalid MulOp"; break;
-			case 56: s = "invalid VarDecl"; break;
-			case 57: s = "invalid Stat"; break;
+			case 55: s = "invalid Primary"; break;
+			case 56: s = "invalid MulOp"; break;
+			case 57: s = "invalid VarDecl"; break;
 			case 58: s = "invalid Stat"; break;
 			case 59: s = "invalid Stat"; break;
-			case 60: s = "invalid IncrOp"; break;
-			case 61: s = "invalid Type"; break;
+			case 60: s = "invalid Stat"; break;
+			case 61: s = "invalid IncrOp"; break;
+			case 62: s = "invalid Type"; break;
 
 			default: s = "error " + n; break;
 		}

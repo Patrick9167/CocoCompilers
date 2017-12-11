@@ -4,7 +4,7 @@ COMPILER Tastier
       var = 0, proc = 1, scope =2, constant=3, array=4;
 
    const int // types
-      undef = 0, integer = 1, boolean = 2, struct=3;
+      undef = 0, integer = 1, boolean = 2, estruct = 3;
 
    public SymbolTable tab;
    public CodeGenerator gen;
@@ -17,7 +17,7 @@ CHARACTERS
   lf  = '\n'.
   tab = '\t'.
   digit = "0123456789".
-  letter = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".
+  letter = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.".
   stringCh = ANY - '"' - '\\' - cr - lf - tab.
   printableCh = '\u0020' .. '\u007e'.
 
@@ -206,7 +206,7 @@ ProcDecl<string progName>
   '(' ')'
   '{'
      {
-     VarDecl
+     (VarDecl | StructDecl)
      }
      {
      ProcDecl<progName>
@@ -369,9 +369,9 @@ Stat                     (. int type; string name; Obj obj; int reg, regT;.)
     }
                           (. gen.IncrOp(incOp, index,regIncrement);
                              gen.Branch(anotherL);
-                          .)
+                             gen.Label(exitL);.)
   "}"
-                          (.gen.Label(exitL);.)
+
 
 | "switch"              (.int breakL, nextCaseL, regR;
                           nextCaseL = gen.NewLabel();
@@ -492,7 +492,7 @@ Tastier                  (. string progName; .)
   Ident<out progName>    (. tab.OpenScope(); .)
   '{'
     // Constants
-    { VarDecl | ConstDecl} // Constants or global variables/arrays
+    { VarDecl | ConstDecl | StructInit} // Constants or global variables/arrays
     { ProcDecl<progName> }
                          (. tab.CloseScope(); .)
   '}'
@@ -663,17 +663,43 @@ number               (.
 
 /*-------------------------------------------------------------------------------------------*/
 
-StructDecl              (.Obj obj; .)
+StructInit              (.string name;.)
 =
 "struct"
-Ident<out name>         (. obj = tab.NewObj(name, array, struct); .)
+Ident<out name>         (. tab.NewObj(name, array, estruct);.)
 "{"
   {VarDecl}
 "}"
+                        (. tab.NewObj("EndStruct", undef, estruct); .)
 ";"
 
 .
 
+/*-------------------------------------------------------------------------------------------*/
+
+StructDecl              (.Obj obj; string name, tempName, initStruct;.)
+=
+
+"struct"
+Ident<out initStruct>    (. obj = tab.Find(initStruct);
+                            if(obj.type != estruct)
+                              SemErr("Must be a struct!");.)  // make sure template is a struct
+
+Ident<out name>
+                          (. tab.NewObj(name, array, estruct);  //new instance
+                             obj = obj.next;
+                            while(obj.name != "EndStruct")  //create new variable declarations with ident
+                            {                               // "structname"."varname"
+                              tempName = name + "." + obj.name;
+                              tab.NewObj(tempName, obj.kind, obj.type, obj.length);
+                              obj=obj.next;
+                            }.)
+
+";"
+
+
+
+.
 /*-------------------------------------------------------------------------------------------*/
 
 END Tastier.

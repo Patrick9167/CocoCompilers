@@ -7,6 +7,7 @@ public class Obj { // properties of declared symbol
    public int kind;    // var, proc or scope
    public int type;    // its type if var (undef for proc)
    public int level;   // lexic level: 0 = global; >= 1 local
+   public int length;
    public int adr;     // address (displacement) in scope
    public Obj next;    // ptr to next object in scope
    // for scopes
@@ -21,7 +22,7 @@ public class SymbolTable {
       var = 0, proc = 1, scope = 2, constant = 3, array=4;
 
    const int // types
-      undef = 0, integer = 1, boolean = 2;
+      undef = 0, integer = 1, boolean = 2, estruct = 3;
 
    public Obj topScope; // topmost procedure scope
    public int curLevel; // nesting level of current scope
@@ -110,6 +111,7 @@ public class SymbolTable {
       Obj obj = new Obj();
       obj.name = name; obj.kind = kind;
       obj.type = type; obj.level = curLevel;
+      obj.length = length;
       obj.next = null;
       p = topScope.locals; last = null;
       while (p != null) {
