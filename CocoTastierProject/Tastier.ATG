@@ -273,10 +273,21 @@ SimExpr<out int reg,     //load value of SimExpr into register
 
 /*-------------------------------------------------------------------------------------------*/
 
-Stat                     (. int type; string name; Obj obj; int reg, regT;.)
+Stat                     (. int type; Op op; string name; Obj obj; int reg, regT;.)
 = Ident<out name>        (. obj = tab.Find(name); .)
   (
-[
+
+  IncrOp<out op>          (. reg=0;.)
+
+  [
+    Expr<out reg,
+         out type>        (.if(op==Op.IBO || op == Op.DBO)
+                              SemErr("No Expr Needed!");.)
+  ]
+
+  ";"                     (. .)
+|
+ [
   "["
        Expr<out reg,
               out type>  (.if( type == integer)

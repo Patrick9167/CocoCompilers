@@ -9,6 +9,7 @@ program Test {
     int  subject[100];
     int   bookId;
     };
+
    int i;
    const int test = 99999;
    int testArr[20, 89];
@@ -50,6 +51,7 @@ program Test {
          read i;
 
       randy := 4;
+      randy++;
       testArr[7, randy] := 5;
       sum := testArr[7, randy];
       switch(randy) {

@@ -271,10 +271,10 @@ public class Scanner {
 		start[60] = 30; 
 		start[62] = 31; 
 		start[33] = 13; 
-		start[91] = 21; 
-		start[44] = 22; 
-		start[93] = 23; 
-		start[59] = 25; 
+		start[59] = 21; 
+		start[91] = 22; 
+		start[44] = 23; 
+		start[93] = 24; 
 		start[98] = 32; 
 		start[Buffer.EOF] = -1;
 
@@ -510,7 +510,7 @@ public class Scanner {
 				else {t.kind = 5; break;}
 			case 29:
 				recEnd = pos; recKind = 7;
-				if (ch == '=') {AddCh(); goto case 24;}
+				if (ch == '=') {AddCh(); goto case 25;}
 				else {t.kind = 7; break;}
 			case 30:
 				recEnd = pos; recKind = 21;
